@@ -1,1 +1,0 @@
-initSidebarItems({"mod":[["id_type","Maid"],["public_id_type","PublicMaid"],["revocation_id_type","AnMaid"]]});

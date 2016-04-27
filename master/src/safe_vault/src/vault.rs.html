@@ -321,25 +321,6 @@
 <span id="278">278</span>
 <span id="279">279</span>
 <span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -375,8 +356,7 @@
 <span class='kw'>use</span> <span class='ident'>personas</span>::<span class='ident'>data_manager</span>::<span class='ident'>DataManager</span>;
 
 <span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>CHUNK_STORE_PREFIX</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span> <span class='op'>=</span> <span class='string'>&quot;safe-vault&quot;</span>;
-<span class='comment'>// FIXME - reinstate this const</span>
-<span class='comment'>// const DEFAULT_MAX_CAPACITY: u64 = 1024 * 1024 * 1024;</span>
+<span class='kw'>const</span> <span class='ident'>DEFAULT_MAX_CAPACITY</span>: <span class='ident'>u64</span> <span class='op'>=</span> <span class='number'>100</span> <span class='op'>*</span> <span class='number'>1024</span> <span class='op'>*</span> <span class='number'>1024</span>;
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>not</span>(<span class='ident'>test</span>), <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>routing</span>::<span class='ident'>Event</span> <span class='kw'>as</span> <span class='ident'>Event</span>;
@@ -409,15 +389,12 @@
     <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw'>Self</span>, <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
         <span class='ident'>sodiumoxide</span>::<span class='ident'>init</span>();
-        <span class='comment'>// FIXME - reinstate use of `max_capacity`</span>
-        <span class='comment'>// let max_capacity = config.max_capacity.unwrap_or(DEFAULT_MAX_CAPACITY);</span>
-        <span class='kw'>let</span> <span class='ident'>max_capacity</span> <span class='op'>=</span> <span class='number'>30</span> <span class='op'>*</span> <span class='number'>1024</span> <span class='op'>*</span> <span class='number'>1024</span>;
         <span class='kw'>let</span> (<span class='ident'>routing_sender</span>, <span class='ident'>routing_receiver</span>) <span class='op'>=</span> <span class='ident'>mpsc</span>::<span class='ident'>channel</span>();
         <span class='kw'>let</span> <span class='ident'>routing_node</span> <span class='op'>=</span> <span class='ident'>Rc</span>::<span class='ident'>new</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>RoutingNode</span>::<span class='ident'>new</span>(<span class='ident'>routing_sender</span>, <span class='boolval'>true</span>)));
 
         <span class='prelude-val'>Ok</span>(<span class='ident'>Vault</span> {
             <span class='ident'>maid_manager</span>: <span class='ident'>MaidManager</span>::<span class='ident'>new</span>(<span class='ident'>routing_node</span>.<span class='ident'>clone</span>()),
-            <span class='ident'>data_manager</span>: <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>DataManager</span>::<span class='ident'>new</span>(<span class='ident'>routing_node</span>.<span class='ident'>clone</span>(), <span class='ident'>max_capacity</span>)),
+            <span class='ident'>data_manager</span>: <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>DataManager</span>::<span class='ident'>new</span>(<span class='ident'>routing_node</span>.<span class='ident'>clone</span>(), <span class='ident'>DEFAULT_MAX_CAPACITY</span>)),
             <span class='ident'>routing_node</span>: <span class='ident'>routing_node</span>.<span class='ident'>clone</span>(),
             <span class='ident'>routing_receiver</span>: <span class='ident'>routing_receiver</span>,
         })
@@ -427,15 +404,12 @@
     <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw'>Self</span>, <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
         <span class='ident'>sodiumoxide</span>::<span class='ident'>init</span>();
-        <span class='comment'>// FIXME - reinstate use of `max_capacity`</span>
-        <span class='comment'>// let max_capacity = config.max_capacity.unwrap_or(DEFAULT_MAX_CAPACITY);</span>
-        <span class='kw'>let</span> <span class='ident'>max_capacity</span> <span class='op'>=</span> <span class='number'>30</span> <span class='op'>*</span> <span class='number'>1024</span> <span class='op'>*</span> <span class='number'>1024</span>;
         <span class='kw'>let</span> (<span class='ident'>routing_sender</span>, <span class='ident'>routing_receiver</span>) <span class='op'>=</span> <span class='ident'>mpsc</span>::<span class='ident'>channel</span>();
         <span class='kw'>let</span> <span class='ident'>routing_node</span> <span class='op'>=</span> <span class='ident'>Rc</span>::<span class='ident'>new</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>RoutingNode</span>::<span class='ident'>new</span>(<span class='ident'>routing_sender</span>, <span class='boolval'>true</span>)));
 
         <span class='prelude-val'>Ok</span>(<span class='ident'>Vault</span> {
             <span class='ident'>maid_manager</span>: <span class='ident'>MaidManager</span>::<span class='ident'>new</span>(<span class='ident'>routing_node</span>.<span class='ident'>clone</span>()),
-            <span class='ident'>data_manager</span>: <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>DataManager</span>::<span class='ident'>new</span>(<span class='ident'>routing_node</span>.<span class='ident'>clone</span>(), <span class='ident'>max_capacity</span>)),
+            <span class='ident'>data_manager</span>: <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>DataManager</span>::<span class='ident'>new</span>(<span class='ident'>routing_node</span>.<span class='ident'>clone</span>(), <span class='ident'>DEFAULT_MAX_CAPACITY</span>)),
             <span class='ident'>routing_node</span>: <span class='ident'>routing_node</span>.<span class='ident'>clone</span>(),
             <span class='ident'>routing_receiver</span>: <span class='ident'>routing_receiver</span>,
         })
@@ -443,26 +417,14 @@
 
     <span class='doccomment'>/// Run the event loop, processing events received from Routing.</span>
     <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>run</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>exit</span> <span class='op'>=</span> <span class='boolval'>false</span>;
-        <span class='kw'>while</span> <span class='op'>!</span><span class='ident'>exit</span> {
-            <span class='kw'>let</span> (<span class='ident'>routing_sender</span>, <span class='ident'>routing_receiver</span>) <span class='op'>=</span> <span class='ident'>mpsc</span>::<span class='ident'>channel</span>();
-            <span class='self'>self</span>.<span class='ident'>routing_receiver</span> <span class='op'>=</span> <span class='ident'>routing_receiver</span>;
-            <span class='self'>self</span>.<span class='ident'>routing_node</span> <span class='op'>=</span> <span class='ident'>Rc</span>::<span class='ident'>new</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>RoutingNode</span>::<span class='ident'>new</span>(<span class='ident'>routing_sender</span>, <span class='boolval'>true</span>)));
-            <span class='comment'>// FIXME: See Vault::new.</span>
-            <span class='kw'>let</span> <span class='ident'>max_capacity</span> <span class='op'>=</span> <span class='number'>30</span> <span class='op'>*</span> <span class='number'>1024</span> <span class='op'>*</span> <span class='number'>1024</span>;
-            <span class='self'>self</span>.<span class='ident'>maid_manager</span> <span class='op'>=</span> <span class='ident'>MaidManager</span>::<span class='ident'>new</span>(<span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>clone</span>());
-            <span class='self'>self</span>.<span class='ident'>data_manager</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>DataManager</span>::<span class='ident'>new</span>(<span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>clone</span>(), <span class='ident'>max_capacity</span>));
-
-            <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Ok</span>(<span class='ident'>event</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>routing_receiver</span>.<span class='ident'>recv</span>() {
-                <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>terminate</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>process_event</span>(<span class='ident'>event</span>) {
-                    <span class='ident'>exit</span> <span class='op'>=</span> <span class='ident'>terminate</span>;
-                    <span class='kw'>break</span>;
-                }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>run</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>bool</span>, <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
+        <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Ok</span>(<span class='ident'>event</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>routing_receiver</span>.<span class='ident'>recv</span>() {
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>terminate</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>process_event</span>(<span class='ident'>event</span>) {
+                <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='ident'>terminate</span>);
             }
         }
-
-        <span class='prelude-val'>Ok</span>(())
+        <span class='comment'>// FIXME: decide if we want to restart here (in which case return `Ok(false)`).</span>
+        <span class='prelude-val'>Ok</span>(<span class='boolval'>true</span>)
     }
 
     <span class='doccomment'>/// Non-blocking call to process any events in the event queue, returning true if</span>

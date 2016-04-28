@@ -307,20 +307,6 @@
 <span id="264">264</span>
 <span id="265">265</span>
 <span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -347,8 +333,8 @@
 <span class='comment'>// use config_handler::Config;</span>
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
 <span class='kw'>use</span> <span class='ident'>routing</span>::<span class='ident'>DataIdentifier</span>;
-<span class='kw'>use</span> <span class='ident'>routing</span>::{<span class='ident'>Authority</span>, <span class='ident'>Data</span>, <span class='ident'>RequestContent</span>, <span class='ident'>RequestMessage</span>, <span class='ident'>ResponseContent</span>,
-              <span class='ident'>ResponseMessage</span>, <span class='ident'>RoutingMessage</span>};
+<span class='kw'>use</span> <span class='ident'>routing</span>::{<span class='ident'>Authority</span>, <span class='ident'>Data</span>, <span class='ident'>RequestContent</span>, <span class='ident'>RequestMessage</span>, <span class='ident'>ResponseContent</span>, <span class='ident'>ResponseMessage</span>,
+              <span class='ident'>RoutingMessage</span>};
 <span class='kw'>use</span> <span class='ident'>xor_name</span>::<span class='ident'>XorName</span>;
 
 <span class='kw'>use</span> <span class='ident'>error</span>::<span class='ident'>InternalError</span>;
@@ -359,16 +345,16 @@
 <span class='kw'>const</span> <span class='ident'>DEFAULT_MAX_CAPACITY</span>: <span class='ident'>u64</span> <span class='op'>=</span> <span class='number'>100</span> <span class='op'>*</span> <span class='number'>1024</span> <span class='op'>*</span> <span class='number'>1024</span>;
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>not</span>(<span class='ident'>test</span>), <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>routing</span>::<span class='ident'>Event</span> <span class='kw'>as</span> <span class='ident'>Event</span>;
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>routing</span>::<span class='ident'>Event</span>;
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)))]</span>
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>mock_routing</span>::<span class='ident'>Event</span> <span class='kw'>as</span> <span class='ident'>Event</span>;
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>mock_routing</span>::<span class='ident'>Event</span>;
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>not</span>(<span class='ident'>test</span>), <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>routing</span>::<span class='ident'>NodeInfo</span> <span class='kw'>as</span> <span class='ident'>NodeInfo</span>;
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>routing</span>::<span class='ident'>NodeInfo</span>;
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)))]</span>
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>mock_routing</span>::<span class='ident'>NodeInfo</span> <span class='kw'>as</span> <span class='ident'>NodeInfo</span>;
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>mock_routing</span>::<span class='ident'>NodeInfo</span>;
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>not</span>(<span class='ident'>test</span>), <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>routing</span>::<span class='ident'>Node</span> <span class='kw'>as</span> <span class='ident'>RoutingNode</span>;
@@ -386,22 +372,6 @@
 
 <span class='kw'>impl</span> <span class='ident'>Vault</span> {
     <span class='doccomment'>/// Creates a network Vault instance.</span>
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw'>Self</span>, <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
-        <span class='ident'>sodiumoxide</span>::<span class='ident'>init</span>();
-        <span class='kw'>let</span> (<span class='ident'>routing_sender</span>, <span class='ident'>routing_receiver</span>) <span class='op'>=</span> <span class='ident'>mpsc</span>::<span class='ident'>channel</span>();
-        <span class='kw'>let</span> <span class='ident'>routing_node</span> <span class='op'>=</span> <span class='ident'>Rc</span>::<span class='ident'>new</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>RoutingNode</span>::<span class='ident'>new</span>(<span class='ident'>routing_sender</span>, <span class='boolval'>true</span>)));
-
-        <span class='prelude-val'>Ok</span>(<span class='ident'>Vault</span> {
-            <span class='ident'>maid_manager</span>: <span class='ident'>MaidManager</span>::<span class='ident'>new</span>(<span class='ident'>routing_node</span>.<span class='ident'>clone</span>()),
-            <span class='ident'>data_manager</span>: <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>DataManager</span>::<span class='ident'>new</span>(<span class='ident'>routing_node</span>.<span class='ident'>clone</span>(), <span class='ident'>DEFAULT_MAX_CAPACITY</span>)),
-            <span class='ident'>routing_node</span>: <span class='ident'>routing_node</span>.<span class='ident'>clone</span>(),
-            <span class='ident'>routing_receiver</span>: <span class='ident'>routing_receiver</span>,
-        })
-    }
-
-    <span class='doccomment'>/// Creates a network Vault instance.</span>
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw'>Self</span>, <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
         <span class='ident'>sodiumoxide</span>::<span class='ident'>init</span>();
         <span class='kw'>let</span> (<span class='ident'>routing_sender</span>, <span class='ident'>routing_receiver</span>) <span class='op'>=</span> <span class='ident'>mpsc</span>::<span class='ident'>channel</span>();
@@ -480,6 +450,7 @@
                 <span class='ident'>ret</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='boolval'>true</span>);
                 <span class='prelude-val'>Ok</span>(())
             }
+            <span class='ident'>Event</span>::<span class='ident'>Tick</span> <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(()),
         } {
             <span class='macro'>debug</span><span class='macro'>!</span>(<span class='string'>&quot;Failed to handle event: {:?}&quot;</span>, <span class='ident'>error</span>);
         }
@@ -493,9 +464,7 @@
             <span class='comment'>// ================== Get ==================</span>
             (<span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>Client</span> { .. },
              <span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>NaeManager</span>(_),
-             <span class='kw-2'>&amp;</span><span class='ident'>RequestContent</span>::<span class='ident'>Get</span>(<span class='kw-2'>ref</span> <span class='ident'>data_id</span>, <span class='kw-2'>ref</span> <span class='ident'>msg_id</span>)) <span class='op'>=&gt;</span> {
-                <span class='self'>self</span>.<span class='ident'>data_manager</span>.<span class='ident'>handle_get</span>(<span class='kw-2'>&amp;</span><span class='ident'>request</span>, <span class='ident'>data_id</span>, <span class='ident'>msg_id</span>)
-            }
+             <span class='kw-2'>&amp;</span><span class='ident'>RequestContent</span>::<span class='ident'>Get</span>(<span class='kw-2'>ref</span> <span class='ident'>data_id</span>, <span class='kw-2'>ref</span> <span class='ident'>msg_id</span>)) <span class='op'>|</span>
             (<span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>ManagedNode</span>(_),
              <span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>ManagedNode</span>(_),
              <span class='kw-2'>&amp;</span><span class='ident'>RequestContent</span>::<span class='ident'>Get</span>(<span class='kw-2'>ref</span> <span class='ident'>data_id</span>, <span class='kw-2'>ref</span> <span class='ident'>msg_id</span>)) <span class='op'>=&gt;</span> {
@@ -531,10 +500,13 @@
              <span class='kw-2'>&amp;</span><span class='ident'>RequestContent</span>::<span class='ident'>Refresh</span>(<span class='kw-2'>ref</span> <span class='ident'>serialised_msg</span>, _)) <span class='op'>=&gt;</span> {
                 <span class='self'>self</span>.<span class='ident'>maid_manager</span>.<span class='ident'>handle_refresh</span>(<span class='ident'>serialised_msg</span>)
             }
-            (<span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>ManagedNode</span>(_),
+            (<span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>ManagedNode</span>(<span class='kw-2'>ref</span> <span class='ident'>src</span>),
              <span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>ManagedNode</span>(_),
-             <span class='kw-2'>&amp;</span><span class='ident'>RequestContent</span>::<span class='ident'>Refresh</span>(<span class='kw-2'>ref</span> <span class='ident'>serialised_msg</span>, <span class='kw-2'>ref</span> <span class='ident'>msg_id</span>)) <span class='op'>=&gt;</span> {
-                <span class='self'>self</span>.<span class='ident'>data_manager</span>.<span class='ident'>handle_refresh</span>(<span class='ident'>serialised_msg</span>, <span class='ident'>msg_id</span>)
+             <span class='kw-2'>&amp;</span><span class='ident'>RequestContent</span>::<span class='ident'>Refresh</span>(<span class='kw-2'>ref</span> <span class='ident'>serialised_msg</span>, _)) <span class='op'>|</span>
+            (<span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>ManagedNode</span>(<span class='kw-2'>ref</span> <span class='ident'>src</span>),
+             <span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>NaeManager</span>(_),
+             <span class='kw-2'>&amp;</span><span class='ident'>RequestContent</span>::<span class='ident'>Refresh</span>(<span class='kw-2'>ref</span> <span class='ident'>serialised_msg</span>, _)) <span class='op'>=&gt;</span> {
+                <span class='self'>self</span>.<span class='ident'>data_manager</span>.<span class='ident'>handle_refresh</span>(<span class='ident'>src</span>, <span class='ident'>serialised_msg</span>)
             }
             <span class='comment'>// ================== Invalid Request ==================</span>
             _ <span class='op'>=&gt;</span> <span class='prelude-val'>Err</span>(<span class='ident'>InternalError</span>::<span class='ident'>UnknownMessageType</span>(<span class='ident'>RoutingMessage</span>::<span class='ident'>Request</span>(<span class='ident'>request</span>.<span class='ident'>clone</span>()))),
@@ -544,10 +516,10 @@
     <span class='kw'>fn</span> <span class='ident'>on_response</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>response</span>: <span class='ident'>ResponseMessage</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
         <span class='kw'>match</span> (<span class='kw-2'>&amp;</span><span class='ident'>response</span>.<span class='ident'>src</span>, <span class='kw-2'>&amp;</span><span class='ident'>response</span>.<span class='ident'>dst</span>, <span class='kw-2'>&amp;</span><span class='ident'>response</span>.<span class='ident'>content</span>) {
             <span class='comment'>// ================== GetSuccess ==================</span>
-            (<span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>ManagedNode</span>(_),
+            (<span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>ManagedNode</span>(<span class='kw-2'>ref</span> <span class='ident'>src</span>),
              <span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>ManagedNode</span>(_),
-             <span class='kw-2'>&amp;</span><span class='ident'>ResponseContent</span>::<span class='ident'>GetSuccess</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>, <span class='kw-2'>ref</span> <span class='ident'>msg_id</span>)) <span class='op'>=&gt;</span> {
-                <span class='self'>self</span>.<span class='ident'>data_manager</span>.<span class='ident'>handle_get_success</span>(<span class='ident'>data</span>, <span class='ident'>msg_id</span>)
+             <span class='kw-2'>&amp;</span><span class='ident'>ResponseContent</span>::<span class='ident'>GetSuccess</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>, _)) <span class='op'>=&gt;</span> {
+                <span class='self'>self</span>.<span class='ident'>data_manager</span>.<span class='ident'>handle_get_success</span>(<span class='ident'>src</span>, <span class='ident'>data</span>)
             }
             <span class='comment'>// ================== GetFailure ==================</span>
             (<span class='kw-2'>&amp;</span><span class='ident'>Authority</span>::<span class='ident'>ManagedNode</span>(<span class='kw-2'>ref</span> <span class='ident'>src</span>),

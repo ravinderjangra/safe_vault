@@ -305,17 +305,6 @@
 <span id="262">262</span>
 <span id="263">263</span>
 <span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -337,13 +326,13 @@
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>rc</span>::<span class='ident'>Rc</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>mpsc</span>::{<span class='self'>self</span>, <span class='ident'>Receiver</span>};
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
 <span class='kw'>use</span> <span class='ident'>config_handler</span>::<span class='ident'>Config</span>;
 <span class='kw'>use</span> <span class='ident'>error</span>::<span class='ident'>InternalError</span>;
 <span class='kw'>use</span> <span class='ident'>kademlia_routing_table</span>::<span class='ident'>RoutingTable</span>;
 <span class='kw'>use</span> <span class='ident'>personas</span>::<span class='ident'>maid_manager</span>::<span class='ident'>MaidManager</span>;
 <span class='kw'>use</span> <span class='ident'>personas</span>::<span class='ident'>data_manager</span>::<span class='ident'>DataManager</span>;
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
 <span class='kw'>use</span> <span class='ident'>routing</span>::<span class='ident'>DataIdentifier</span>;
 <span class='kw'>use</span> <span class='ident'>routing</span>::{<span class='ident'>Authority</span>, <span class='ident'>Data</span>, <span class='ident'>RequestContent</span>, <span class='ident'>RequestMessage</span>, <span class='ident'>ResponseContent</span>, <span class='ident'>ResponseMessage</span>,
               <span class='ident'>RoutingMessage</span>};
@@ -353,23 +342,13 @@
 <span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>CHUNK_STORE_PREFIX</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span> <span class='op'>=</span> <span class='string'>&quot;safe-vault&quot;</span>;
 <span class='kw'>const</span> <span class='ident'>DEFAULT_MAX_CAPACITY</span>: <span class='ident'>u64</span> <span class='op'>=</span> <span class='number'>500</span> <span class='op'>*</span> <span class='number'>1024</span> <span class='op'>*</span> <span class='number'>1024</span>;
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>not</span>(<span class='ident'>test</span>), <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>routing</span>::<span class='ident'>Event</span>;
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)))]</span>
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>mock_routing</span>::<span class='ident'>Event</span>;
-
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>not</span>(<span class='ident'>test</span>), <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>routing</span>::<span class='ident'>NodeInfo</span>;
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)))]</span>
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>mock_routing</span>::<span class='ident'>NodeInfo</span>;
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>not</span>(<span class='ident'>test</span>), <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>routing</span>::<span class='ident'>Node</span> <span class='kw'>as</span> <span class='ident'>RoutingNode</span>;
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)))]</span>
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>mock_routing</span>::<span class='ident'>MockRoutingNode</span> <span class='kw'>as</span> <span class='ident'>RoutingNode</span>;
 
 <span class='doccomment'>/// Main struct to hold all personas and Routing instance</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Vault</span> {
@@ -396,7 +375,7 @@
 
     <span class='doccomment'>/// Allow replacing the default config values for use with the mock-crust tests.  This should</span>
     <span class='doccomment'>/// only be called immediately after constructing a new Vault.</span>
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
+    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>apply_config</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>config</span>: <span class='ident'>Config</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='ident'>max_capacity</span> <span class='op'>=</span> <span class='ident'>config</span>.<span class='ident'>max_capacity</span>.<span class='ident'>unwrap_or</span>(<span class='ident'>DEFAULT_MAX_CAPACITY</span>);
         <span class='self'>self</span>.<span class='ident'>data_manager</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>DataManager</span>::<span class='ident'>new</span>(<span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>clone</span>(), <span class='ident'>max_capacity</span>));
@@ -404,7 +383,6 @@
     }
 
     <span class='doccomment'>/// Run the event loop, processing events received from Routing.</span>
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>run</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>bool</span>, <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
         <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Ok</span>(<span class='ident'>event</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>routing_receiver</span>.<span class='ident'>recv</span>() {
             <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>terminate</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>process_event</span>(<span class='ident'>event</span>) {
@@ -430,13 +408,13 @@
     }
 
     <span class='doccomment'>/// Get the names of all the data chunks stored in a personas&#39; chunk store.</span>
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
+    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_stored_names</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>DataIdentifier</span><span class='op'>&gt;</span> {
         <span class='self'>self</span>.<span class='ident'>data_manager</span>.<span class='ident'>get_stored_names</span>()
     }
 
     <span class='doccomment'>/// Get the number of put requests the network processed for the given client.</span>
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
+    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_maid_manager_put_count</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>client_name</span>: <span class='kw-2'>&amp;</span><span class='ident'>XorName</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>u64</span><span class='op'>&gt;</span> {
         <span class='self'>self</span>.<span class='ident'>maid_manager</span>.<span class='ident'>get_put_count</span>(<span class='ident'>client_name</span>)
     }

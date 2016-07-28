@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-88ac128001ac3a9a/safe_network_common-0.1.1/src/messaging/mpid_message_wrapper.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/safe_network_common-0.5.0/src/messaging/mpid_message_wrapper.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>mpid_message_wrapper.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
 
     <link rel="shortcut icon" href="http://maidsafe.net/img/favicon.ico">
     
@@ -94,9 +95,6 @@
 <span id="51">51</span>
 <span id="52">52</span>
 <span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2016 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -115,11 +113,8 @@
 <span class='comment'>// Please review the Licences for the specific language governing permissions and limitations</span>
 <span class='comment'>// relating to use of the SAFE Network Software.</span>
 
-<span class='comment'>// use maidsafe_utilities::serialisation::serialise;</span>
-<span class='comment'>// use sodiumoxide::crypto::hash::sha512;</span>
-<span class='comment'>// use sodiumoxide::crypto::sign::{self, PublicKey, SecretKey, Signature};</span>
-<span class='kw'>use</span> <span class='ident'>super</span>::{<span class='ident'>MpidHeader</span>, <span class='ident'>MpidMessage</span>};
-<span class='kw'>use</span> <span class='ident'>xor_name</span>::<span class='ident'>XorName</span>;
+<span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>MpidHeader</span>, <span class='ident'>MpidMessage</span>};
+<span class='kw'>use</span> <span class='ident'>routing</span>::<span class='ident'>XorName</span>;
 
 <span class='doccomment'>/// A serialisable wrapper to allow multiplexing all MPID message types and actions via a single</span>
 <span class='doccomment'>/// type.</span>
@@ -178,6 +173,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

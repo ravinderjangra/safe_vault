@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-88ac128001ac3a9a/routing-0.18.3/src/types.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/routing-0.24.3/src/types.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>types.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     <link rel="shortcut icon" href="http://maidsafe.net/img/favicon.ico">
     
@@ -144,8 +145,6 @@
 <span id="101">101</span>
 <span id="102">102</span>
 <span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -166,7 +165,6 @@
 
 <span class='kw'>use</span> <span class='ident'>rand</span>::<span class='ident'>random</span>;
 <span class='kw'>use</span> <span class='ident'>xor_name</span>::<span class='ident'>XorName</span>;
-<span class='kw'>use</span> <span class='ident'>rustc_serialize</span>::{<span class='ident'>Encoder</span>, <span class='ident'>Decoder</span>};
 <span class='kw'>use</span> <span class='ident'>maidsafe_utilities</span>::<span class='ident'>event_sender</span>::<span class='ident'>MaidSafeObserver</span>;
 
 <span class='kw'>pub</span> <span class='kw'>type</span> <span class='ident'>RoutingActionSender</span> <span class='op'>=</span> <span class='ident'>MaidSafeObserver</span><span class='op'>&lt;</span>::<span class='ident'>action</span>::<span class='ident'>Action</span><span class='op'>&gt;</span>;
@@ -179,7 +177,6 @@
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Ord</span>, <span class='ident'>PartialOrd</span>, <span class='ident'>Debug</span>, <span class='ident'>Clone</span>, <span class='ident'>Copy</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialEq</span>, <span class='ident'>RustcEncodable</span>, <span class='ident'>RustcDecodable</span>, <span class='ident'>Hash</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>MessageId</span>(<span class='ident'>XorName</span>);
 
-<span class='attribute'>#[<span class='ident'>cfg_attr</span>(<span class='ident'>feature</span><span class='op'>=</span><span class='string'>&quot;clippy&quot;</span>, <span class='ident'>allow</span>(<span class='ident'>char_lit_as_u8</span>))]</span> <span class='comment'>// &#39;A&#39; and &#39;L&#39; are ASCII.</span>
 <span class='kw'>impl</span> <span class='ident'>MessageId</span> {
     <span class='doccomment'>/// Generate a new `MessageId` with random content.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>MessageId</span> {
@@ -189,18 +186,18 @@
     <span class='doccomment'>/// Generate a `MessageId` with value 0. This should only be used for messages where there is</span>
     <span class='doccomment'>/// no danger of duplication.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>zero</span>() <span class='op'>-&gt;</span> <span class='ident'>MessageId</span> {
-        <span class='ident'>MessageId</span>(<span class='ident'>XorName</span>([<span class='number'>0</span>; <span class='number'>64</span>]))
+        <span class='ident'>MessageId</span>(<span class='ident'>XorName</span>([<span class='number'>0</span>; <span class='number'>32</span>]))
     }
 
     <span class='doccomment'>/// Generate a new `MessageId` with contents extracted from lost node.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>from_lost_node</span>(<span class='kw-2'>mut</span> <span class='ident'>name</span>: <span class='ident'>XorName</span>) <span class='op'>-&gt;</span> <span class='ident'>MessageId</span> {
-        <span class='ident'>name</span>.<span class='number'>0</span>[<span class='number'>0</span>] <span class='op'>=</span> <span class='string'>&#39;L&#39;</span> <span class='kw'>as</span> <span class='ident'>u8</span>;
+        <span class='ident'>name</span>.<span class='number'>0</span>[<span class='number'>0</span>] <span class='op'>=</span> <span class='string'>b&#39;L&#39;</span>;
         <span class='ident'>MessageId</span>(<span class='ident'>name</span>)
     }
 
     <span class='doccomment'>/// Generate a new `MessageId` with contents extracted from new node.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>from_added_node</span>(<span class='kw-2'>mut</span> <span class='ident'>name</span>: <span class='ident'>XorName</span>) <span class='op'>-&gt;</span> <span class='ident'>MessageId</span> {
-        <span class='ident'>name</span>.<span class='number'>0</span>[<span class='number'>0</span>] <span class='op'>=</span> <span class='string'>&#39;A&#39;</span> <span class='kw'>as</span> <span class='ident'>u8</span>;
+        <span class='ident'>name</span>.<span class='number'>0</span>[<span class='number'>0</span>] <span class='op'>=</span> <span class='string'>b&#39;A&#39;</span>;
         <span class='ident'>MessageId</span>(<span class='ident'>name</span>)
     }
 
@@ -235,8 +232,8 @@
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='attribute'>#[<span class='ident'>cfg_attr</span>(<span class='ident'>feature</span><span class='op'>=</span><span class='string'>&quot;clippy&quot;</span>, <span class='ident'>allow</span>(<span class='ident'>indexing_slicing</span>))]</span>
 <span class='kw'>mod</span> <span class='ident'>test</span> {
-    <span class='kw'>use</span> <span class='ident'>super</span>::<span class='ident'>MessageId</span>;
-    <span class='kw'>use</span> <span class='ident'>xor_name</span>::{<span class='ident'>XorName</span>, <span class='ident'>XOR_NAME_LEN</span>};
+    <span class='kw'>use</span> <span class='kw'>super</span>::<span class='ident'>MessageId</span>;
+    <span class='kw'>use</span> <span class='ident'>xor_name</span>::{<span class='ident'>XOR_NAME_LEN</span>, <span class='ident'>XorName</span>};
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>increment</span>() {
@@ -276,6 +273,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

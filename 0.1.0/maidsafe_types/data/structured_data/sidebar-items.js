@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["StructuredData","StructuredData"],["StructuredDataTypeTag","TypeTag for StructuredData"]]});

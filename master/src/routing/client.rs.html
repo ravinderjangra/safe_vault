@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-88ac128001ac3a9a/routing-0.18.3/src/client.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/routing-0.24.3/src/client.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>client.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     <link rel="shortcut icon" href="http://maidsafe.net/img/favicon.ico">
     
@@ -220,6 +221,38 @@
 <span id="177">177</span>
 <span id="178">178</span>
 <span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -240,6 +273,7 @@
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
 <span class='kw'>use</span> <span class='ident'>maidsafe_utilities</span>::<span class='ident'>thread</span>::<span class='ident'>RaiiThreadJoiner</span>;
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
 <span class='kw'>use</span> <span class='ident'>sodiumoxide</span>;
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cell</span>::<span class='ident'>RefCell</span>;
@@ -248,12 +282,14 @@
 <span class='kw'>use</span> <span class='ident'>id</span>::<span class='ident'>FullId</span>;
 <span class='kw'>use</span> <span class='ident'>action</span>::<span class='ident'>Action</span>;
 <span class='kw'>use</span> <span class='ident'>event</span>::<span class='ident'>Event</span>;
-<span class='kw'>use</span> <span class='ident'>core</span>::<span class='ident'>Core</span>;
+<span class='kw'>use</span> <span class='ident'>cache</span>::<span class='ident'>NullCache</span>;
+<span class='kw'>use</span> <span class='ident'>core</span>::{<span class='ident'>Core</span>, <span class='ident'>Role</span>};
 <span class='kw'>use</span> <span class='ident'>data</span>::{<span class='ident'>Data</span>, <span class='ident'>DataIdentifier</span>};
 <span class='kw'>use</span> <span class='ident'>error</span>::{<span class='ident'>InterfaceError</span>, <span class='ident'>RoutingError</span>};
 <span class='kw'>use</span> <span class='ident'>authority</span>::<span class='ident'>Authority</span>;
-<span class='kw'>use</span> <span class='ident'>messages</span>::<span class='ident'>RequestContent</span>;
+<span class='kw'>use</span> <span class='ident'>messages</span>::{<span class='ident'>CLIENT_GET_PRIORITY</span>, <span class='ident'>DEFAULT_PRIORITY</span>, <span class='ident'>Request</span>};
 <span class='kw'>use</span> <span class='ident'>types</span>::<span class='ident'>MessageId</span>;
+<span class='kw'>use</span> <span class='ident'>xor_name</span>::<span class='ident'>XorName</span>;
 
 <span class='kw'>type</span> <span class='ident'>RoutingResult</span> <span class='op'>=</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>RoutingError</span><span class='op'>&gt;</span>;
 
@@ -286,14 +322,12 @@
     <span class='doccomment'>/// cryptographically secure and uses group consensus. The restriction for the client name</span>
     <span class='doccomment'>/// exists to ensure that the client cannot choose its `ClientAuthority`.</span>
     <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>event_sender</span>: <span class='ident'>Sender</span><span class='op'>&lt;</span><span class='ident'>Event</span><span class='op'>&gt;</span>,
-               <span class='ident'>keys</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>FullId</span><span class='op'>&gt;</span>,
-               <span class='ident'>use_data_cache</span>: <span class='ident'>bool</span>)
-               <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Client</span>, <span class='ident'>RoutingError</span><span class='op'>&gt;</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>event_sender</span>: <span class='ident'>Sender</span><span class='op'>&lt;</span><span class='ident'>Event</span><span class='op'>&gt;</span>, <span class='ident'>keys</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>FullId</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Client</span>, <span class='ident'>RoutingError</span><span class='op'>&gt;</span> {
         <span class='ident'>sodiumoxide</span>::<span class='ident'>init</span>();  <span class='comment'>// enable shared global (i.e. safe to multithread now)</span>
 
         <span class='comment'>// start the handler for routing with a restriction to become a full node</span>
-        <span class='kw'>let</span> (<span class='ident'>action_sender</span>, <span class='kw-2'>mut</span> <span class='ident'>core</span>) <span class='op'>=</span> <span class='ident'>Core</span>::<span class='ident'>new</span>(<span class='ident'>event_sender</span>, <span class='boolval'>true</span>, <span class='ident'>keys</span>, <span class='ident'>use_data_cache</span>);
+        <span class='kw'>let</span> (<span class='ident'>action_sender</span>, <span class='kw-2'>mut</span> <span class='ident'>core</span>) <span class='op'>=</span>
+            <span class='ident'>Core</span>::<span class='ident'>new</span>(<span class='ident'>event_sender</span>, <span class='ident'>Role</span>::<span class='ident'>Client</span>, <span class='ident'>keys</span>, <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>NullCache</span>), <span class='boolvalue'>false</span>);
         <span class='kw'>let</span> (<span class='ident'>tx</span>, <span class='ident'>rx</span>) <span class='op'>=</span> <span class='ident'>channel</span>();
 
         <span class='kw'>let</span> <span class='ident'>raii_joiner</span> <span class='op'>=</span> <span class='ident'>RaiiThreadJoiner</span>::<span class='ident'>new</span>(<span class='macro'>thread</span><span class='macro'>!</span>(<span class='string'>&quot;Client thread&quot;</span>, <span class='kw'>move</span> <span class='op'>||</span> {
@@ -310,14 +344,10 @@
 
     <span class='doccomment'>/// Create a new `Client` for unit testing.</span>
     <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>event_sender</span>: <span class='ident'>Sender</span><span class='op'>&lt;</span><span class='ident'>Event</span><span class='op'>&gt;</span>,
-               <span class='ident'>keys</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>FullId</span><span class='op'>&gt;</span>,
-               <span class='ident'>use_data_cache</span>: <span class='ident'>bool</span>)
-               <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Client</span>, <span class='ident'>RoutingError</span><span class='op'>&gt;</span> {
-        <span class='ident'>sodiumoxide</span>::<span class='ident'>init</span>();  <span class='comment'>// enable shared global (i.e. safe to multithread now)</span>
-
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>event_sender</span>: <span class='ident'>Sender</span><span class='op'>&lt;</span><span class='ident'>Event</span><span class='op'>&gt;</span>, <span class='ident'>keys</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>FullId</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Client</span>, <span class='ident'>RoutingError</span><span class='op'>&gt;</span> {
         <span class='comment'>// start the handler for routing with a restriction to become a full node</span>
-        <span class='kw'>let</span> (<span class='ident'>action_sender</span>, <span class='ident'>core</span>) <span class='op'>=</span> <span class='ident'>Core</span>::<span class='ident'>new</span>(<span class='ident'>event_sender</span>, <span class='boolval'>true</span>, <span class='ident'>keys</span>, <span class='ident'>use_data_cache</span>);
+        <span class='kw'>let</span> (<span class='ident'>action_sender</span>, <span class='ident'>core</span>) <span class='op'>=</span>
+            <span class='ident'>Core</span>::<span class='ident'>new</span>(<span class='ident'>event_sender</span>, <span class='ident'>Role</span>::<span class='ident'>Client</span>, <span class='ident'>keys</span>, <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>NullCache</span>), <span class='boolvalue'>false</span>);
         <span class='kw'>let</span> (<span class='ident'>tx</span>, <span class='ident'>rx</span>) <span class='op'>=</span> <span class='ident'>channel</span>();
 
         <span class='prelude-val'>Ok</span>(<span class='ident'>Client</span> {
@@ -334,13 +364,25 @@
         <span class='self'>self</span>.<span class='ident'>core</span>.<span class='ident'>borrow_mut</span>().<span class='ident'>poll</span>()
     }
 
+    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
+    <span class='doccomment'>/// Resend all unacknowledged messages.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>resend_unacknowledged</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
+        <span class='self'>self</span>.<span class='ident'>core</span>.<span class='ident'>borrow_mut</span>().<span class='ident'>resend_unacknowledged</span>()
+    }
+
+    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
+    <span class='doccomment'>/// Are there any unacknowledged messages?</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>has_unacknowledged</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
+        <span class='self'>self</span>.<span class='ident'>core</span>.<span class='ident'>borrow</span>().<span class='ident'>has_unacknowledged</span>()
+    }
+
     <span class='doccomment'>/// Send a Get message with a `DataIdentifier` to an `Authority`, signed with given keys.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>send_get_request</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>,
                             <span class='ident'>dst</span>: <span class='ident'>Authority</span>,
                             <span class='ident'>data_id</span>: <span class='ident'>DataIdentifier</span>,
                             <span class='ident'>message_id</span>: <span class='ident'>MessageId</span>)
                             <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>send_action</span>(<span class='ident'>RequestContent</span>::<span class='ident'>Get</span>(<span class='ident'>data_id</span>, <span class='ident'>message_id</span>), <span class='ident'>dst</span>)
+        <span class='self'>self</span>.<span class='ident'>send_action</span>(<span class='ident'>Request</span>::<span class='ident'>Get</span>(<span class='ident'>data_id</span>, <span class='ident'>message_id</span>), <span class='ident'>dst</span>, <span class='ident'>CLIENT_GET_PRIORITY</span>)
     }
 
     <span class='doccomment'>/// Add something to the network</span>
@@ -349,7 +391,7 @@
                             <span class='ident'>data</span>: <span class='ident'>Data</span>,
                             <span class='ident'>message_id</span>: <span class='ident'>MessageId</span>)
                             <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>send_action</span>(<span class='ident'>RequestContent</span>::<span class='ident'>Put</span>(<span class='ident'>data</span>, <span class='ident'>message_id</span>), <span class='ident'>dst</span>)
+        <span class='self'>self</span>.<span class='ident'>send_action</span>(<span class='ident'>Request</span>::<span class='ident'>Put</span>(<span class='ident'>data</span>, <span class='ident'>message_id</span>), <span class='ident'>dst</span>, <span class='ident'>DEFAULT_PRIORITY</span>)
     }
 
     <span class='doccomment'>/// Change something already on the network</span>
@@ -358,7 +400,7 @@
                              <span class='ident'>data</span>: <span class='ident'>Data</span>,
                              <span class='ident'>message_id</span>: <span class='ident'>MessageId</span>)
                              <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>send_action</span>(<span class='ident'>RequestContent</span>::<span class='ident'>Post</span>(<span class='ident'>data</span>, <span class='ident'>message_id</span>), <span class='ident'>dst</span>)
+        <span class='self'>self</span>.<span class='ident'>send_action</span>(<span class='ident'>Request</span>::<span class='ident'>Post</span>(<span class='ident'>data</span>, <span class='ident'>message_id</span>), <span class='ident'>dst</span>, <span class='ident'>DEFAULT_PRIORITY</span>)
     }
 
     <span class='doccomment'>/// Remove something from the network</span>
@@ -367,29 +409,52 @@
                                <span class='ident'>data</span>: <span class='ident'>Data</span>,
                                <span class='ident'>message_id</span>: <span class='ident'>MessageId</span>)
                                <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>send_action</span>(<span class='ident'>RequestContent</span>::<span class='ident'>Delete</span>(<span class='ident'>data</span>, <span class='ident'>message_id</span>), <span class='ident'>dst</span>)
+        <span class='self'>self</span>.<span class='ident'>send_action</span>(<span class='ident'>Request</span>::<span class='ident'>Delete</span>(<span class='ident'>data</span>, <span class='ident'>message_id</span>), <span class='ident'>dst</span>, <span class='ident'>DEFAULT_PRIORITY</span>)
     }
 
-    <span class='kw'>fn</span> <span class='ident'>send_action</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>content</span>: <span class='ident'>RequestContent</span>, <span class='ident'>dst</span>: <span class='ident'>Authority</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
+    <span class='doccomment'>/// Request account information for the Client calling this function</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>send_get_account_info_request</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>,
+                                         <span class='ident'>dst</span>: <span class='ident'>Authority</span>,
+                                         <span class='ident'>message_id</span>: <span class='ident'>MessageId</span>)
+                                         <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
+        <span class='self'>self</span>.<span class='ident'>send_action</span>(<span class='ident'>Request</span>::<span class='ident'>GetAccountInfo</span>(<span class='ident'>message_id</span>),
+                         <span class='ident'>dst</span>,
+                         <span class='ident'>CLIENT_GET_PRIORITY</span>)
+    }
+
+    <span class='doccomment'>/// Returns the name of this node.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>name</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>XorName</span>, <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
+        <span class='kw'>let</span> (<span class='ident'>result_tx</span>, <span class='ident'>result_rx</span>) <span class='op'>=</span> <span class='ident'>channel</span>();
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>action_sender</span>.<span class='ident'>send</span>(<span class='ident'>Action</span>::<span class='ident'>Name</span> { <span class='ident'>result_tx</span>: <span class='ident'>result_tx</span> }));
+
+        <span class='self'>self</span>.<span class='ident'>receive_action_result</span>(<span class='kw-2'>&amp;</span><span class='ident'>result_rx</span>)
+    }
+
+    <span class='kw'>fn</span> <span class='ident'>send_action</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>,
+                   <span class='ident'>content</span>: <span class='ident'>Request</span>,
+                   <span class='ident'>dst</span>: <span class='ident'>Authority</span>,
+                   <span class='ident'>priority</span>: <span class='ident'>u8</span>)
+                   <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='ident'>action</span> <span class='op'>=</span> <span class='ident'>Action</span>::<span class='ident'>ClientSendRequest</span> {
             <span class='ident'>content</span>: <span class='ident'>content</span>,
             <span class='ident'>dst</span>: <span class='ident'>dst</span>,
+            <span class='ident'>priority</span>: <span class='ident'>priority</span>,
             <span class='ident'>result_tx</span>: <span class='self'>self</span>.<span class='ident'>interface_result_tx</span>.<span class='ident'>clone</span>(),
         };
 
         <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>action_sender</span>.<span class='ident'>send</span>(<span class='ident'>action</span>));
-        <span class='self'>self</span>.<span class='ident'>receive_action_result</span>()
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>receive_action_result</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>interface_result_rx</span>))
     }
 
     <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
-    <span class='kw'>fn</span> <span class='ident'>receive_action_result</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
-        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>interface_result_rx</span>.<span class='ident'>recv</span>())
+    <span class='kw'>fn</span> <span class='ident'>receive_action_result</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>rx</span>: <span class='kw-2'>&amp;</span><span class='ident'>Receiver</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
+        <span class='prelude-val'>Ok</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>rx</span>.<span class='ident'>recv</span>()))
     }
 
     <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>receive_action_result</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
+    <span class='kw'>fn</span> <span class='ident'>receive_action_result</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>rx</span>: <span class='kw-2'>&amp;</span><span class='ident'>Receiver</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
         <span class='kw'>while</span> <span class='self'>self</span>.<span class='ident'>poll</span>() {}
-        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>interface_result_rx</span>.<span class='ident'>recv</span>())
+        <span class='prelude-val'>Ok</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>rx</span>.<span class='ident'>recv</span>()))
     }
 }
 
@@ -424,6 +489,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["SafeCoin","SafeCoin"],["SafeCoinTypeTag","TypeTag for SafeCoin"]]});

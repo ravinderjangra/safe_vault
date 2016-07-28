@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Config","Lets a vault configure a wallet address and storage limit."]]});

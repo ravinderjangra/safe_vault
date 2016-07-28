@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["main","Runs a SAFE Network vault."]]});

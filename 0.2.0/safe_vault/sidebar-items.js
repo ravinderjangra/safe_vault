@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["main","Runs a SAFE Network vault."]],"macro":[["evaluate_option!","A replacement for calling `unwrap()` on an `Option`."],["evaluate_result!","A replacement for calling `unwrap()` on a `Result`."]]});

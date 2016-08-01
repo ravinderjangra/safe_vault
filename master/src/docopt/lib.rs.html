@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/docopt-0.6.81/src/lib.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/docopt-0.6.82/src/lib.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>lib.rs.html -- source</title>
@@ -283,6 +283,7 @@
 <span id="239">239</span>
 <span id="240">240</span>
 <span id="241">241</span>
+<span id="242">242</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Docopt for Rust. This implementation conforms to the</span>
 <span class='doccomment'>//! [official description of Docopt](http://docopt.org/) and</span>
@@ -501,6 +502,8 @@
 
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>deny</span>(<span class='ident'>missing_docs</span>)]</span>
 
+<span class='attribute'>#[<span class='ident'>macro_use</span>]</span>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>lazy_static</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>regex</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rustc_serialize</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>strsim</span>;
@@ -514,7 +517,6 @@
     })
 );
 
-<span class='comment'>// cheat until we get syntax extensions back :-(</span>
 <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>regex</span>(
     (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>s</span>:<span class='ident'>expr</span>) <span class='op'>=&gt;</span> (::<span class='ident'>regex</span>::<span class='ident'>Regex</span>::<span class='ident'>new</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>s</span>).<span class='ident'>unwrap</span>());
 );

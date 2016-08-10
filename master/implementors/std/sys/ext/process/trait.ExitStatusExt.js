@@ -1,5 +1,5 @@
 (function() {var implementors = {};
-implementors["tmp_mio"] = [];implementors["mio"] = [];implementors["openssl"] = [];implementors["maidsafe_utilities"] = [];implementors["crust"] = [];
+implementors["antidote"] = [];implementors["humantime"] = [];implementors["mio"] = [];implementors["tmp_mio"] = [];implementors["maidsafe_utilities"] = [];implementors["openssl"] = [];implementors["rust_sodium_sys"] = [];implementors["crust"] = [];
 
             if (window.register_implementors) {
                 window.register_implementors(implementors);

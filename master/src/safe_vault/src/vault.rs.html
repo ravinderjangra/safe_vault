@@ -356,6 +356,11 @@
 <span id="312">312</span>
 <span id="313">313</span>
 <span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -374,22 +379,22 @@
 <span class='comment'>// Please review the Licences for the specific language governing permissions and limitations</span>
 <span class='comment'>// relating to use of the SAFE Network Software.</span>
 
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>env</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>rc</span>::<span class='ident'>Rc</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>path</span>::<span class='ident'>Path</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>mpsc</span>::{<span class='self'>self</span>, <span class='ident'>Receiver</span>};
 
 <span class='kw'>use</span> <span class='ident'>cache</span>::<span class='ident'>Cache</span>;
 <span class='kw'>use</span> <span class='ident'>config_handler</span>::{<span class='self'>self</span>, <span class='ident'>Config</span>};
 <span class='kw'>use</span> <span class='ident'>error</span>::<span class='ident'>InternalError</span>;
 <span class='kw'>use</span> <span class='ident'>kademlia_routing_table</span>::<span class='ident'>RoutingTable</span>;
-<span class='kw'>use</span> <span class='ident'>personas</span>::<span class='ident'>maid_manager</span>::<span class='ident'>MaidManager</span>;
 <span class='kw'>use</span> <span class='ident'>personas</span>::<span class='ident'>data_manager</span>::<span class='ident'>DataManager</span>;
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
 <span class='kw'>use</span> <span class='ident'>personas</span>::<span class='ident'>data_manager</span>::<span class='ident'>IdAndVersion</span>;
+<span class='kw'>use</span> <span class='ident'>personas</span>::<span class='ident'>maid_manager</span>::<span class='ident'>MaidManager</span>;
 
 <span class='kw'>use</span> <span class='ident'>routing</span>::{<span class='ident'>Authority</span>, <span class='ident'>Data</span>, <span class='ident'>NodeBuilder</span>, <span class='ident'>Request</span>, <span class='ident'>Response</span>, <span class='ident'>XorName</span>};
 <span class='kw'>use</span> <span class='ident'>rust_sodium</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>env</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>path</span>::<span class='ident'>Path</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>rc</span>::<span class='ident'>Rc</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>mpsc</span>::{<span class='self'>self</span>, <span class='ident'>Receiver</span>};
 
 <span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>CHUNK_STORE_DIR</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span> <span class='op'>=</span> <span class='string'>&quot;safe_vault_chunk_store&quot;</span>;
 <span class='kw'>const</span> <span class='ident'>DEFAULT_MAX_CAPACITY</span>: <span class='ident'>u64</span> <span class='op'>=</span> <span class='number'>2</span> <span class='op'>*</span> <span class='number'>1024</span> <span class='op'>*</span> <span class='number'>1024</span> <span class='op'>*</span> <span class='number'>1024</span>;
@@ -478,7 +483,7 @@
             }
         }
         <span class='comment'>// FIXME: decide if we want to restart here (in which case return `Ok(false)`).</span>
-        <span class='prelude-val'>Ok</span>(<span class='boolvalue'>true</span>)
+        <span class='prelude-val'>Ok</span>(<span class='bool-val'>true</span>)
     }
 
     <span class='doccomment'>/// Non-blocking call to process any events in the event queue, returning true if</span>
@@ -489,7 +494,7 @@
 
         <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Ok</span>(<span class='ident'>event</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>routing_receiver</span>.<span class='ident'>try_recv</span>() {
             <span class='kw'>let</span> <span class='ident'>_ignored_for_mock</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>process_event</span>(<span class='ident'>event</span>);
-            <span class='ident'>result</span> <span class='op'>=</span> <span class='boolvalue'>true</span>
+            <span class='ident'>result</span> <span class='op'>=</span> <span class='bool-val'>true</span>
         }
 
         <span class='ident'>result</span>
@@ -545,11 +550,11 @@
             }
             <span class='ident'>Event</span>::<span class='ident'>RestartRequired</span> <span class='op'>=&gt;</span> {
                 <span class='macro'>warn</span><span class='macro'>!</span>(<span class='string'>&quot;Restarting Vault&quot;</span>);
-                <span class='ident'>ret</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='boolvalue'>false</span>);
+                <span class='ident'>ret</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='bool-val'>false</span>);
                 <span class='prelude-val'>Ok</span>(())
             }
             <span class='ident'>Event</span>::<span class='ident'>Terminate</span> <span class='op'>=&gt;</span> {
-                <span class='ident'>ret</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='boolvalue'>true</span>);
+                <span class='ident'>ret</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='bool-val'>true</span>);
                 <span class='prelude-val'>Ok</span>(())
             }
             <span class='ident'>Event</span>::<span class='ident'>Connected</span> <span class='op'>|</span> <span class='ident'>Event</span>::<span class='ident'>Tick</span> <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(()),
@@ -614,6 +619,11 @@
              <span class='ident'>Authority</span>::<span class='ident'>NaeManager</span>(_),
              <span class='ident'>Request</span>::<span class='ident'>Refresh</span>(<span class='ident'>serialised_msg</span>, _)) <span class='op'>=&gt;</span> {
                 <span class='self'>self</span>.<span class='ident'>data_manager</span>.<span class='ident'>handle_refresh</span>(<span class='ident'>src_name</span>, <span class='kw-2'>&amp;</span><span class='ident'>serialised_msg</span>)
+            }
+            (<span class='ident'>Authority</span>::<span class='ident'>NaeManager</span>(_),
+             <span class='ident'>Authority</span>::<span class='ident'>NaeManager</span>(_),
+             <span class='ident'>Request</span>::<span class='ident'>Refresh</span>(<span class='ident'>serialised_msg</span>, _)) <span class='op'>=&gt;</span> {
+                <span class='self'>self</span>.<span class='ident'>data_manager</span>.<span class='ident'>handle_group_refresh</span>(<span class='kw-2'>&amp;</span><span class='ident'>serialised_msg</span>)
             }
             <span class='comment'>// ================== Invalid Request ==================</span>
             (_, _, <span class='ident'>request</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Err</span>(<span class='ident'>InternalError</span>::<span class='ident'>UnknownRequestType</span>(<span class='ident'>request</span>)),

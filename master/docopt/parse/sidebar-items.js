@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["Argument",""],["Atom",""],["Pattern",""]],"fn":[["parse_long_equal",""],["parse_long_equal_argv",""],["pattern_tokens",""]],"struct":[["Argv",""],["ArgvToken",""],["MState",""],["Matcher",""],["Options",""],["Parser",""],["PatParser",""]]});

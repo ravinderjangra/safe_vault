@@ -1,1 +1,0 @@
-initSidebarItems({"mod":[["data_manager",""],["maid_manager",""]]});

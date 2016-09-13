@@ -361,6 +361,10 @@
 <span id="317">317</span>
 <span id="318">318</span>
 <span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -591,14 +595,18 @@
             <span class='comment'>// ================== Post ==================</span>
             (<span class='ident'>src</span> @ <span class='ident'>Authority</span>::<span class='ident'>Client</span> { .. },
              <span class='ident'>dst</span> @ <span class='ident'>Authority</span>::<span class='ident'>NaeManager</span>(_),
-             <span class='ident'>Request</span>::<span class='ident'>Post</span>(<span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='ident'>data</span>), <span class='ident'>msg_id</span>)) <span class='op'>=&gt;</span> {
-                <span class='self'>self</span>.<span class='ident'>data_manager</span>.<span class='ident'>handle_post</span>(<span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>data</span>, <span class='ident'>msg_id</span>)
-            }
+             <span class='ident'>Request</span>::<span class='ident'>Post</span>(<span class='ident'>data</span>, <span class='ident'>msg_id</span>)) <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>data_manager</span>.<span class='ident'>handle_post</span>(<span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>data</span>, <span class='ident'>msg_id</span>),
             <span class='comment'>// ================== Delete ==================</span>
             (<span class='ident'>src</span> @ <span class='ident'>Authority</span>::<span class='ident'>Client</span> { .. },
              <span class='ident'>dst</span> @ <span class='ident'>Authority</span>::<span class='ident'>NaeManager</span>(_),
              <span class='ident'>Request</span>::<span class='ident'>Delete</span>(<span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='ident'>data</span>), <span class='ident'>msg_id</span>)) <span class='op'>=&gt;</span> {
                 <span class='self'>self</span>.<span class='ident'>data_manager</span>.<span class='ident'>handle_delete</span>(<span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>data</span>, <span class='ident'>msg_id</span>)
+            }
+            <span class='comment'>// ================== Append ==================</span>
+            (<span class='ident'>src</span> @ <span class='ident'>Authority</span>::<span class='ident'>Client</span> { .. },
+             <span class='ident'>dst</span> @ <span class='ident'>Authority</span>::<span class='ident'>NaeManager</span>(_),
+             <span class='ident'>Request</span>::<span class='ident'>Append</span>(<span class='ident'>wrapper</span>, <span class='ident'>msg_id</span>)) <span class='op'>=&gt;</span> {
+                <span class='self'>self</span>.<span class='ident'>data_manager</span>.<span class='ident'>handle_append</span>(<span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>wrapper</span>, <span class='ident'>msg_id</span>)
             }
             <span class='comment'>// ================== GetAccountInfo ==================</span>
             (<span class='ident'>src</span> @ <span class='ident'>Authority</span>::<span class='ident'>Client</span> { .. },

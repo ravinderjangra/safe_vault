@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/routing-0.23.4/src/core.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/git/checkouts/routing-616e72cf40f12bc0/0.23/src/core.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>core.rs.html -- source</title>
@@ -4330,7 +4330,7 @@
             <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>node_identify</span>(<span class='ident'>peer_id</span>));
             <span class='self'>self</span>.<span class='ident'>handle_node_identify</span>(<span class='ident'>their_public_id</span>, <span class='ident'>peer_id</span>);
         } <span class='kw'>else</span> <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>routing_table</span>.<span class='ident'>contains</span>(<span class='ident'>their_public_id</span>.<span class='ident'>name</span>()) <span class='op'>&amp;&amp;</span>
-           <span class='self'>self</span>.<span class='ident'>routing_table</span>.<span class='ident'>allow_connection</span>(<span class='ident'>their_public_id</span>.<span class='ident'>name</span>()) {
+                  <span class='self'>self</span>.<span class='ident'>routing_table</span>.<span class='ident'>allow_connection</span>(<span class='ident'>their_public_id</span>.<span class='ident'>name</span>()) {
             <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>peer_mgr</span>
                 .<span class='ident'>connection_token_map</span>
                 .<span class='ident'>peek_iter</span>()
@@ -4384,7 +4384,7 @@
         }
         <span class='kw'>let</span> <span class='ident'>timed_out_ack</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>sip_hash</span>, _)) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>pending_acks</span>
             .<span class='ident'>iter</span>()
-            .<span class='ident'>find</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(_, <span class='kw-2'>ref</span> <span class='ident'>unacked_msg</span>)<span class='op'>|</span> <span class='ident'>unacked_msg</span>.<span class='ident'>timer_token</span> <span class='op'>==</span> <span class='ident'>token</span>) {
+            .<span class='ident'>find</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(_, <span class='ident'>unacked_msg</span>)<span class='op'>|</span> <span class='ident'>unacked_msg</span>.<span class='ident'>timer_token</span> <span class='op'>==</span> <span class='ident'>token</span>) {
             <span class='prelude-val'>Some</span>(<span class='op'>*</span><span class='ident'>sip_hash</span>)
         } <span class='kw'>else</span> {
             <span class='prelude-val'>None</span>
@@ -4404,7 +4404,7 @@
                        <span class='ident'>unacked_msg</span>);
                 <span class='self'>self</span>.<span class='ident'>stats</span>.<span class='ident'>count_unacked</span>();
             } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Err</span>(<span class='ident'>error</span>) <span class='op'>=</span>
-                   <span class='self'>self</span>.<span class='ident'>send_message_via_route</span>(<span class='ident'>unacked_msg</span>.<span class='ident'>routing_msg</span>, <span class='ident'>unacked_msg</span>.<span class='ident'>route</span>) {
+                          <span class='self'>self</span>.<span class='ident'>send_message_via_route</span>(<span class='ident'>unacked_msg</span>.<span class='ident'>routing_msg</span>, <span class='ident'>unacked_msg</span>.<span class='ident'>route</span>) {
                 <span class='macro'>debug</span><span class='macro'>!</span>(<span class='string'>&quot;{:?} Failed to send message: {:?}&quot;</span>, <span class='self'>self</span>, <span class='ident'>error</span>);
             }
         }

@@ -426,6 +426,11 @@
 <span id="382">382</span>
 <span id="383">383</span>
 <span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -532,6 +537,11 @@
             }
             <span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='ident'>struct_data</span>) <span class='op'>=&gt;</span> {
                 <span class='self'>self</span>.<span class='ident'>handle_put_structured_data</span>(<span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>struct_data</span>, <span class='ident'>msg_id</span>)
+            }
+            <span class='ident'>data</span> @ <span class='ident'>Data</span>::<span class='ident'>PubAppendable</span>(..) <span class='op'>|</span>
+            <span class='ident'>data</span> @ <span class='ident'>Data</span>::<span class='ident'>PrivAppendable</span>(..) <span class='op'>=&gt;</span> {
+                <span class='kw'>let</span> <span class='ident'>client_name</span> <span class='op'>=</span> <span class='ident'>utils</span>::<span class='ident'>client_name</span>(<span class='kw-2'>&amp;</span><span class='ident'>src</span>);
+                <span class='self'>self</span>.<span class='ident'>forward_put_request</span>(<span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>client_name</span>, <span class='ident'>data</span>, <span class='ident'>msg_id</span>)
             }
             _ <span class='op'>=&gt;</span> {
                 <span class='self'>self</span>.<span class='ident'>reply_with_put_failure</span>(<span class='ident'>src</span>,

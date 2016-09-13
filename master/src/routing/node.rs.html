@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/routing-0.23.4/src/node.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/git/checkouts/routing-616e72cf40f12bc0/0.23/src/node.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>node.rs.html -- source</title>
@@ -538,6 +538,33 @@
 <span id="494">494</span>
 <span id="495">495</span>
 <span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -872,6 +899,33 @@
                                <span class='ident'>id</span>: <span class='ident'>MessageId</span>)
                                <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='ident'>user_msg</span> <span class='op'>=</span> <span class='ident'>UserMessage</span>::<span class='ident'>Response</span>(<span class='ident'>Response</span>::<span class='ident'>DeleteFailure</span> {
+            <span class='ident'>id</span>: <span class='ident'>id</span>,
+            <span class='ident'>data_id</span>: <span class='ident'>data_id</span>,
+            <span class='ident'>external_error_indicator</span>: <span class='ident'>external_error_indicator</span>,
+        });
+        <span class='self'>self</span>.<span class='ident'>send_action</span>(<span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>user_msg</span>, <span class='ident'>DEFAULT_PRIORITY</span>)
+    }
+
+    <span class='doccomment'>/// Respond to an `Append` request indicating success.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>send_append_success</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>,
+                               <span class='ident'>src</span>: <span class='ident'>Authority</span>,
+                               <span class='ident'>dst</span>: <span class='ident'>Authority</span>,
+                               <span class='ident'>name</span>: <span class='ident'>DataIdentifier</span>,
+                               <span class='ident'>id</span>: <span class='ident'>MessageId</span>)
+                               <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
+        <span class='kw'>let</span> <span class='ident'>user_msg</span> <span class='op'>=</span> <span class='ident'>UserMessage</span>::<span class='ident'>Response</span>(<span class='ident'>Response</span>::<span class='ident'>AppendSuccess</span>(<span class='ident'>name</span>, <span class='ident'>id</span>));
+        <span class='self'>self</span>.<span class='ident'>send_action</span>(<span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>user_msg</span>, <span class='ident'>DEFAULT_PRIORITY</span>)
+    }
+
+    <span class='doccomment'>/// Respond to an `Append` request indicating failure.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>send_append_failure</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>,
+                               <span class='ident'>src</span>: <span class='ident'>Authority</span>,
+                               <span class='ident'>dst</span>: <span class='ident'>Authority</span>,
+                               <span class='ident'>data_id</span>: <span class='ident'>DataIdentifier</span>,
+                               <span class='ident'>external_error_indicator</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>,
+                               <span class='ident'>id</span>: <span class='ident'>MessageId</span>)
+                               <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InterfaceError</span><span class='op'>&gt;</span> {
+        <span class='kw'>let</span> <span class='ident'>user_msg</span> <span class='op'>=</span> <span class='ident'>UserMessage</span>::<span class='ident'>Response</span>(<span class='ident'>Response</span>::<span class='ident'>AppendFailure</span> {
             <span class='ident'>id</span>: <span class='ident'>id</span>,
             <span class='ident'>data_id</span>: <span class='ident'>data_id</span>,
             <span class='ident'>external_error_indicator</span>: <span class='ident'>external_error_indicator</span>,

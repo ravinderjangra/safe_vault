@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/routing-0.23.4/src/messages.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/git/checkouts/routing-616e72cf40f12bc0/0.23/src/messages.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>messages.rs.html -- source</title>
@@ -978,6 +978,32 @@
 <span id="934">934</span>
 <span id="935">935</span>
 <span id="936">936</span>
+<span id="937">937</span>
+<span id="938">938</span>
+<span id="939">939</span>
+<span id="940">940</span>
+<span id="941">941</span>
+<span id="942">942</span>
+<span id="943">943</span>
+<span id="944">944</span>
+<span id="945">945</span>
+<span id="946">946</span>
+<span id="947">947</span>
+<span id="948">948</span>
+<span id="949">949</span>
+<span id="950">950</span>
+<span id="951">951</span>
+<span id="952">952</span>
+<span id="953">953</span>
+<span id="954">954</span>
+<span id="955">955</span>
+<span id="956">956</span>
+<span id="957">957</span>
+<span id="958">958</span>
+<span id="959">959</span>
+<span id="960">960</span>
+<span id="961">961</span>
+<span id="962">962</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -1003,6 +1029,7 @@
 <span class='kw'>use</span> <span class='ident'>lru_time_cache</span>::<span class='ident'>LruCache</span>;
 <span class='kw'>use</span> <span class='ident'>maidsafe_utilities</span>;
 <span class='kw'>use</span> <span class='ident'>maidsafe_utilities</span>::<span class='ident'>serialisation</span>::{<span class='ident'>serialise</span>, <span class='ident'>deserialise</span>};
+<span class='kw'>use</span> <span class='ident'>append_types</span>::<span class='ident'>AppendWrapper</span>;
 <span class='kw'>use</span> <span class='ident'>rust_sodium</span>::<span class='ident'>crypto</span>::{<span class='ident'>box_</span>, <span class='ident'>sign</span>};
 <span class='kw'>use</span> <span class='ident'>rust_sodium</span>::<span class='ident'>crypto</span>::<span class='ident'>hash</span>::<span class='ident'>sha256</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>BTreeMap</span>;
@@ -1542,6 +1569,8 @@
     <span class='ident'>Post</span>(<span class='ident'>Data</span>, <span class='ident'>MessageId</span>),
     <span class='doccomment'>/// Delete data from network. Provide actual data as parameter</span>
     <span class='ident'>Delete</span>(<span class='ident'>Data</span>, <span class='ident'>MessageId</span>),
+    <span class='doccomment'>/// Append an item to an appendable data chunk.</span>
+    <span class='ident'>Append</span>(<span class='ident'>AppendWrapper</span>, <span class='ident'>MessageId</span>),
     <span class='doccomment'>/// Get account information for Client with given ID</span>
     <span class='ident'>GetAccountInfo</span>(<span class='ident'>MessageId</span>),
 }
@@ -1560,6 +1589,8 @@
     <span class='ident'>PostSuccess</span>(<span class='ident'>DataIdentifier</span>, <span class='ident'>MessageId</span>),
     <span class='doccomment'>/// Success token for delete (may be ignored)</span>
     <span class='ident'>DeleteSuccess</span>(<span class='ident'>DataIdentifier</span>, <span class='ident'>MessageId</span>),
+    <span class='doccomment'>/// Success token for append (may be ignored)</span>
+    <span class='ident'>AppendSuccess</span>(<span class='ident'>DataIdentifier</span>, <span class='ident'>MessageId</span>),
     <span class='doccomment'>/// Response containing account information for requested Client account</span>
     <span class='ident'>GetAccountInfoSuccess</span> {
         <span class='doccomment'>/// Unique message identifier</span>
@@ -1605,6 +1636,15 @@
         <span class='doccomment'>/// Error type sent back, may be injected from upper layers</span>
         <span class='ident'>external_error_indicator</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>,
     },
+    <span class='doccomment'>/// Error for append, includes signed request to prevent injection attacks</span>
+    <span class='ident'>AppendFailure</span> {
+        <span class='doccomment'>/// Unique message identifier</span>
+        <span class='ident'>id</span>: <span class='ident'>MessageId</span>,
+        <span class='doccomment'>/// ID of the affected data chunk</span>
+        <span class='ident'>data_id</span>: <span class='ident'>DataIdentifier</span>,
+        <span class='doccomment'>/// Error type sent back, may be injected from upper layers</span>
+        <span class='ident'>external_error_indicator</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>,
+    },
     <span class='doccomment'>/// Error for `GetAccountInfo`</span>
     <span class='ident'>GetAccountInfoFailure</span> {
         <span class='doccomment'>/// Unique message identifier</span>
@@ -1621,6 +1661,7 @@
             <span class='ident'>Request</span>::<span class='ident'>Refresh</span>(..) <span class='op'>=&gt;</span> <span class='number'>2</span>,
             <span class='ident'>Request</span>::<span class='ident'>Get</span>(..) <span class='op'>|</span>
             <span class='ident'>Request</span>::<span class='ident'>GetAccountInfo</span>(..) <span class='op'>=&gt;</span> <span class='number'>3</span>,
+            <span class='ident'>Request</span>::<span class='ident'>Append</span>(..) <span class='op'>=&gt;</span> <span class='number'>4</span>,
             <span class='ident'>Request</span>::<span class='ident'>Put</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>, _) <span class='op'>|</span>
             <span class='ident'>Request</span>::<span class='ident'>Post</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>, _) <span class='op'>|</span>
             <span class='ident'>Request</span>::<span class='ident'>Delete</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>, _) <span class='op'>=&gt;</span> {
@@ -1655,11 +1696,13 @@
             <span class='ident'>Response</span>::<span class='ident'>PutSuccess</span>(..) <span class='op'>|</span>
             <span class='ident'>Response</span>::<span class='ident'>PostSuccess</span>(..) <span class='op'>|</span>
             <span class='ident'>Response</span>::<span class='ident'>DeleteSuccess</span>(..) <span class='op'>|</span>
+            <span class='ident'>Response</span>::<span class='ident'>AppendSuccess</span>(..) <span class='op'>|</span>
             <span class='ident'>Response</span>::<span class='ident'>GetAccountInfoSuccess</span> { .. } <span class='op'>|</span>
             <span class='ident'>Response</span>::<span class='ident'>GetFailure</span> { .. } <span class='op'>|</span>
             <span class='ident'>Response</span>::<span class='ident'>PutFailure</span> { .. } <span class='op'>|</span>
             <span class='ident'>Response</span>::<span class='ident'>PostFailure</span> { .. } <span class='op'>|</span>
             <span class='ident'>Response</span>::<span class='ident'>DeleteFailure</span> { .. } <span class='op'>|</span>
+            <span class='ident'>Response</span>::<span class='ident'>AppendFailure</span> { .. } <span class='op'>|</span>
             <span class='ident'>Response</span>::<span class='ident'>GetAccountInfoFailure</span> { .. } <span class='op'>=&gt;</span> <span class='number'>3</span>,
         }
     }
@@ -1695,6 +1738,9 @@
             <span class='ident'>Request</span>::<span class='ident'>Delete</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>, <span class='kw-2'>ref</span> <span class='ident'>message_id</span>) <span class='op'>=&gt;</span> {
                 <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>formatter</span>, <span class='string'>&quot;Delete({:?}, {:?})&quot;</span>, <span class='ident'>data</span>, <span class='ident'>message_id</span>)
             }
+            <span class='ident'>Request</span>::<span class='ident'>Append</span>(<span class='kw-2'>ref</span> <span class='ident'>wrapper</span>, <span class='kw-2'>ref</span> <span class='ident'>message_id</span>) <span class='op'>=&gt;</span> {
+                <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>formatter</span>, <span class='string'>&quot;Append({:?}, {:?})&quot;</span>, <span class='ident'>wrapper</span>, <span class='ident'>message_id</span>)
+            }
             <span class='ident'>Request</span>::<span class='ident'>GetAccountInfo</span>(<span class='kw-2'>ref</span> <span class='ident'>message_id</span>) <span class='op'>=&gt;</span> {
                 <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>formatter</span>, <span class='string'>&quot;GetAccountInfo({:?})&quot;</span>, <span class='ident'>message_id</span>)
             }
@@ -1717,6 +1763,9 @@
             <span class='ident'>Response</span>::<span class='ident'>DeleteSuccess</span>(<span class='kw-2'>ref</span> <span class='ident'>name</span>, <span class='kw-2'>ref</span> <span class='ident'>message_id</span>) <span class='op'>=&gt;</span> {
                 <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>formatter</span>, <span class='string'>&quot;DeleteSuccess({:?}, {:?})&quot;</span>, <span class='ident'>name</span>, <span class='ident'>message_id</span>)
             }
+            <span class='ident'>Response</span>::<span class='ident'>AppendSuccess</span>(<span class='kw-2'>ref</span> <span class='ident'>name</span>, <span class='kw-2'>ref</span> <span class='ident'>message_id</span>) <span class='op'>=&gt;</span> {
+                <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>formatter</span>, <span class='string'>&quot;AppendSuccess({:?}, {:?})&quot;</span>, <span class='ident'>name</span>, <span class='ident'>message_id</span>)
+            }
             <span class='ident'>Response</span>::<span class='ident'>GetAccountInfoSuccess</span> { <span class='kw-2'>ref</span> <span class='ident'>id</span>, .. } <span class='op'>=&gt;</span> {
                 <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>formatter</span>, <span class='string'>&quot;GetAccountInfoSuccess {{ {:?}, .. }}&quot;</span>, <span class='ident'>id</span>)
             }
@@ -1731,6 +1780,9 @@
             }
             <span class='ident'>Response</span>::<span class='ident'>DeleteFailure</span> { <span class='kw-2'>ref</span> <span class='ident'>id</span>, <span class='kw-2'>ref</span> <span class='ident'>data_id</span>, .. } <span class='op'>=&gt;</span> {
                 <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>formatter</span>, <span class='string'>&quot;DeleteFailure {{ {:?}, {:?}, .. }}&quot;</span>, <span class='ident'>id</span>, <span class='ident'>data_id</span>)
+            }
+            <span class='ident'>Response</span>::<span class='ident'>AppendFailure</span> { <span class='kw-2'>ref</span> <span class='ident'>id</span>, <span class='kw-2'>ref</span> <span class='ident'>data_id</span>, .. } <span class='op'>=&gt;</span> {
+                <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>formatter</span>, <span class='string'>&quot;AppendFailure {{ {:?}, {:?}, .. }}&quot;</span>, <span class='ident'>id</span>, <span class='ident'>data_id</span>)
             }
             <span class='ident'>Response</span>::<span class='ident'>GetAccountInfoFailure</span> { <span class='kw-2'>ref</span> <span class='ident'>id</span>, .. } <span class='op'>=&gt;</span> {
                 <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>formatter</span>, <span class='string'>&quot;GetAccountInfoFailure {{ {:?}, .. }}&quot;</span>, <span class='ident'>id</span>)

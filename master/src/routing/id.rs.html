@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/routing-0.23.4/src/id.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/git/checkouts/routing-616e72cf40f12bc0/0.23/src/id.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>id.rs.html -- source</title>
@@ -167,10 +167,6 @@
 <span id="123">123</span>
 <span id="124">124</span>
 <span id="125">125</span>
-<span id="126">126</span>
-<span id="127">127</span>
-<span id="128">128</span>
-<span id="129">129</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -215,10 +211,8 @@
     }
 
     <span class='doccomment'>/// Construct with given keys, (Client requirement).</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>with_keys</span>(<span class='ident'>encrypt_keys</span>: (<span class='ident'>box_</span>::<span class='ident'>PublicKey</span>,
-                                    <span class='ident'>box_</span>::<span class='ident'>SecretKey</span>),
-                     <span class='ident'>sign_keys</span>: (<span class='ident'>sign</span>::<span class='ident'>PublicKey</span>,
-                                 <span class='ident'>sign</span>::<span class='ident'>SecretKey</span>))
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>with_keys</span>(<span class='ident'>encrypt_keys</span>: (<span class='ident'>box_</span>::<span class='ident'>PublicKey</span>, <span class='ident'>box_</span>::<span class='ident'>SecretKey</span>),
+                     <span class='ident'>sign_keys</span>: (<span class='ident'>sign</span>::<span class='ident'>PublicKey</span>, <span class='ident'>sign</span>::<span class='ident'>SecretKey</span>))
                      <span class='op'>-&gt;</span> <span class='ident'>FullId</span> {
         <span class='comment'>// TODO Verify that pub/priv key pairs match</span>
         <span class='ident'>FullId</span> {
@@ -291,9 +285,7 @@
         <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>public_sign_key</span>
     }
 
-    <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>public_encrypt_key</span>: <span class='ident'>box_</span>::<span class='ident'>PublicKey</span>,
-           <span class='ident'>public_sign_key</span>: <span class='ident'>sign</span>::<span class='ident'>PublicKey</span>)
-           <span class='op'>-&gt;</span> <span class='ident'>PublicId</span> {
+    <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>public_encrypt_key</span>: <span class='ident'>box_</span>::<span class='ident'>PublicKey</span>, <span class='ident'>public_sign_key</span>: <span class='ident'>sign</span>::<span class='ident'>PublicKey</span>) <span class='op'>-&gt;</span> <span class='ident'>PublicId</span> {
         <span class='ident'>PublicId</span> {
             <span class='ident'>public_encrypt_key</span>: <span class='ident'>public_encrypt_key</span>,
             <span class='ident'>public_sign_key</span>: <span class='ident'>public_sign_key</span>,

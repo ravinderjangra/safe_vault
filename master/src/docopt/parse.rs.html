@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/docopt-0.6.85/src/parse.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/docopt-0.6.86/src/parse.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>parse.rs.html -- source</title>
@@ -1493,6 +1493,45 @@
 <span id="1449">1449</span>
 <span id="1450">1450</span>
 <span id="1451">1451</span>
+<span id="1452">1452</span>
+<span id="1453">1453</span>
+<span id="1454">1454</span>
+<span id="1455">1455</span>
+<span id="1456">1456</span>
+<span id="1457">1457</span>
+<span id="1458">1458</span>
+<span id="1459">1459</span>
+<span id="1460">1460</span>
+<span id="1461">1461</span>
+<span id="1462">1462</span>
+<span id="1463">1463</span>
+<span id="1464">1464</span>
+<span id="1465">1465</span>
+<span id="1466">1466</span>
+<span id="1467">1467</span>
+<span id="1468">1468</span>
+<span id="1469">1469</span>
+<span id="1470">1470</span>
+<span id="1471">1471</span>
+<span id="1472">1472</span>
+<span id="1473">1473</span>
+<span id="1474">1474</span>
+<span id="1475">1475</span>
+<span id="1476">1476</span>
+<span id="1477">1477</span>
+<span id="1478">1478</span>
+<span id="1479">1479</span>
+<span id="1480">1480</span>
+<span id="1481">1481</span>
+<span id="1482">1482</span>
+<span id="1483">1483</span>
+<span id="1484">1484</span>
+<span id="1485">1485</span>
+<span id="1486">1486</span>
+<span id="1487">1487</span>
+<span id="1488">1488</span>
+<span id="1489">1489</span>
+<span id="1490">1490</span>
 </pre><pre class='rust '>
 <span class='comment'>// I am overall pretty displeased with the quality of code in this module.</span>
 <span class='comment'>// I wrote it while simultaneously trying to build a mental model of Docopt&#39;s</span>
@@ -2255,6 +2294,8 @@
 
     <span class='kw'>fn</span> <span class='ident'>repeat</span>(<span class='ident'>p</span>: <span class='ident'>Pattern</span>) <span class='op'>-&gt;</span> <span class='ident'>Pattern</span> {
         <span class='kw'>match</span> <span class='ident'>p</span> {
+            <span class='comment'>// Normalize [p1 p2]... into the equivalent [p1... p2...].</span>
+            <span class='ident'>Optional</span>(<span class='ident'>ps</span>) <span class='op'>=&gt;</span> <span class='ident'>Optional</span>(<span class='ident'>ps</span>.<span class='ident'>into_iter</span>().<span class='ident'>map</span>(<span class='ident'>Pattern</span>::<span class='ident'>repeat</span>).<span class='ident'>collect</span>()),
             <span class='ident'>p</span> @ <span class='ident'>Repeat</span>(_) <span class='op'>=&gt;</span> <span class='ident'>p</span>,
             <span class='ident'>p</span> <span class='op'>=&gt;</span> <span class='ident'>Repeat</span>(<span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>p</span>)),
         }
@@ -2808,6 +2849,25 @@
                 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>noflags</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>();
                 <span class='kw'>for</span> <span class='ident'>p</span> <span class='kw'>in</span> <span class='ident'>ps</span>.<span class='ident'>iter</span>() {
                     <span class='kw'>match</span> <span class='ident'>p</span> {
+                        <span class='comment'>// Prevent exponential growth in cases like [--flag...]</span>
+                        <span class='comment'>// See https://github.com/docopt/docopt.rs/issues/195</span>
+                        <span class='kw-2'>&amp;</span><span class='ident'>Repeat</span>(<span class='kw-2'>ref</span> <span class='ident'>b</span>) <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='op'>*</span><span class='ident'>b</span> {
+                            <span class='kw-2'>&amp;</span><span class='ident'>PatAtom</span>(<span class='kw-2'>ref</span> <span class='ident'>a</span> @ <span class='ident'>Short</span>(_))
+                            <span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>PatAtom</span>(<span class='kw-2'>ref</span> <span class='ident'>a</span> @ <span class='ident'>Long</span>(_)) <span class='op'>=&gt;</span> {
+                                <span class='kw'>let</span> <span class='ident'>argv_count</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>argv</span>.<span class='ident'>counts</span>.<span class='ident'>get</span>(<span class='ident'>a</span>)
+                                                     .<span class='ident'>map_or</span>(<span class='number'>0</span>, <span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>x</span><span class='op'>|</span> <span class='ident'>x</span>);
+                                <span class='kw'>let</span> <span class='ident'>max_count</span> <span class='op'>=</span> <span class='ident'>base</span>.<span class='ident'>max_counts</span>.<span class='ident'>get</span>(<span class='ident'>a</span>)
+                                                    .<span class='ident'>map_or</span>(<span class='number'>0</span>, <span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>x</span><span class='op'>|</span> <span class='ident'>x</span>);
+                                <span class='kw'>if</span> <span class='ident'>argv_count</span> <span class='op'>&gt;</span> <span class='ident'>max_count</span> {
+                                    <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='ident'>max_count</span>..<span class='ident'>argv_count</span> {
+                                        <span class='ident'>base</span>.<span class='ident'>use_optional_flag</span>(<span class='ident'>a</span>);
+                                    }
+                                }
+                            }
+                            _ <span class='op'>=&gt;</span> {
+                                <span class='ident'>noflags</span>.<span class='ident'>push</span>(<span class='ident'>p</span>);
+                            }
+                        },
                         <span class='kw-2'>&amp;</span><span class='ident'>PatAtom</span>(<span class='kw-2'>ref</span> <span class='ident'>a</span> @ <span class='ident'>Short</span>(_))
                         <span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>PatAtom</span>(<span class='kw-2'>ref</span> <span class='ident'>a</span> @ <span class='ident'>Long</span>(_)) <span class='op'>=&gt;</span> {
                             <span class='kw'>let</span> <span class='ident'>argv_count</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>argv</span>.<span class='ident'>counts</span>.<span class='ident'>get</span>(<span class='ident'>a</span>)
@@ -2827,26 +2887,44 @@
                 <span class='self'>self</span>.<span class='ident'>all_option_states</span>(<span class='kw-2'>&amp;</span><span class='ident'>base</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>states</span>, <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>noflags</span>);
                 <span class='ident'>states</span>
             }
-            <span class='ident'>Repeat</span>(<span class='kw-2'>ref</span> <span class='ident'>p</span>) <span class='op'>=&gt;</span> {
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>grouped_states</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>states</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='op'>*</span><span class='ident'>p</span>, <span class='ident'>init</span>));
-                <span class='kw'>loop</span> {
-                    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>nextss</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>();
-                    <span class='kw'>for</span> <span class='ident'>s</span> <span class='kw'>in</span> <span class='ident'>grouped_states</span>.<span class='ident'>last</span>().<span class='ident'>unwrap</span>().<span class='ident'>iter</span>() {
-                        <span class='ident'>nextss</span>.<span class='ident'>extend</span>(
-                            <span class='self'>self</span>.<span class='ident'>states</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='op'>*</span><span class='ident'>p</span>, <span class='ident'>s</span>)
-                                .<span class='ident'>into_iter</span>()
-                                .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>snext</span><span class='op'>|</span> <span class='ident'>snext</span> <span class='op'>!=</span> <span class='ident'>s</span>));
+            <span class='ident'>Repeat</span>(<span class='kw-2'>ref</span> <span class='ident'>p</span>) <span class='op'>=&gt;</span> { <span class='kw'>match</span> <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='op'>*</span><span class='ident'>p</span> {
+                <span class='kw-2'>&amp;</span><span class='ident'>PatAtom</span>(<span class='kw-2'>ref</span> <span class='ident'>a</span> @ <span class='ident'>Short</span>(_))
+                <span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>PatAtom</span>(<span class='kw-2'>ref</span> <span class='ident'>a</span> @ <span class='ident'>Long</span>(_)) <span class='op'>=&gt;</span> {
+                    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>bases</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>states</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='op'>*</span><span class='ident'>p</span>, <span class='ident'>init</span>);
+                    <span class='kw'>for</span> <span class='ident'>base</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>bases</span> {
+                        <span class='kw'>let</span> <span class='ident'>argv_count</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>argv</span>.<span class='ident'>counts</span>.<span class='ident'>get</span>(<span class='ident'>a</span>)
+                                             .<span class='ident'>map_or</span>(<span class='number'>0</span>, <span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>x</span><span class='op'>|</span> <span class='ident'>x</span>);
+                        <span class='kw'>let</span> <span class='ident'>max_count</span> <span class='op'>=</span> <span class='ident'>base</span>.<span class='ident'>max_counts</span>.<span class='ident'>get</span>(<span class='ident'>a</span>)
+                                            .<span class='ident'>map_or</span>(<span class='number'>0</span>, <span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>x</span><span class='op'>|</span> <span class='ident'>x</span>);
+                        <span class='kw'>if</span> <span class='ident'>argv_count</span> <span class='op'>&gt;</span> <span class='ident'>max_count</span> {
+                            <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='ident'>max_count</span>..<span class='ident'>argv_count</span> {
+                                <span class='ident'>base</span>.<span class='ident'>use_optional_flag</span>(<span class='ident'>a</span>);
+                            }
+                        }
                     }
-                    <span class='kw'>if</span> <span class='ident'>nextss</span>.<span class='ident'>is_empty</span>() {
-                        <span class='kw'>break</span>
-                    }
-                    <span class='ident'>grouped_states</span>.<span class='ident'>push</span>(<span class='ident'>nextss</span>);
+                    <span class='ident'>bases</span>
                 }
-                <span class='ident'>grouped_states</span>
-                    .<span class='ident'>into_iter</span>()
-                    .<span class='ident'>flat_map</span>(<span class='op'>|</span><span class='ident'>ss</span><span class='op'>|</span> <span class='ident'>ss</span>.<span class='ident'>into_iter</span>())
-                    .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>MState</span><span class='op'>&gt;&gt;</span>()
-            }
+                _ <span class='op'>=&gt;</span> {
+                    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>grouped_states</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>states</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='op'>*</span><span class='ident'>p</span>, <span class='ident'>init</span>));
+                    <span class='kw'>loop</span> {
+                        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>nextss</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>();
+                        <span class='kw'>for</span> <span class='ident'>s</span> <span class='kw'>in</span> <span class='ident'>grouped_states</span>.<span class='ident'>last</span>().<span class='ident'>unwrap</span>().<span class='ident'>iter</span>() {
+                            <span class='ident'>nextss</span>.<span class='ident'>extend</span>(
+                                <span class='self'>self</span>.<span class='ident'>states</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='op'>*</span><span class='ident'>p</span>, <span class='ident'>s</span>)
+                                    .<span class='ident'>into_iter</span>()
+                                    .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>snext</span><span class='op'>|</span> <span class='ident'>snext</span> <span class='op'>!=</span> <span class='ident'>s</span>));
+                        }
+                        <span class='kw'>if</span> <span class='ident'>nextss</span>.<span class='ident'>is_empty</span>() {
+                            <span class='kw'>break</span>
+                        }
+                        <span class='ident'>grouped_states</span>.<span class='ident'>push</span>(<span class='ident'>nextss</span>);
+                    }
+                    <span class='ident'>grouped_states</span>
+                        .<span class='ident'>into_iter</span>()
+                        .<span class='ident'>flat_map</span>(<span class='op'>|</span><span class='ident'>ss</span><span class='op'>|</span> <span class='ident'>ss</span>.<span class='ident'>into_iter</span>())
+                        .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>MState</span><span class='op'>&gt;&gt;</span>()
+                }
+            }}
             <span class='ident'>PatAtom</span>(<span class='kw-2'>ref</span> <span class='ident'>atom</span>) <span class='op'>=&gt;</span> {
                 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state</span> <span class='op'>=</span> <span class='ident'>init</span>.<span class='ident'>clone</span>();
                 <span class='kw'>match</span> <span class='op'>*</span><span class='ident'>atom</span> {

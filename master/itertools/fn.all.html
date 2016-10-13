@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `_tt_as_expr_hack!` macro in crate `matches`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, _tt_as_expr_hack!">
+    <meta name="description" content="API documentation for the Rust `all` fn in crate `itertools`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, all">
 
-    <title>matches::_tt_as_expr_hack! - Rust</title>
+    <title>itertools::all - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../main.css">
@@ -28,7 +28,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'><a href='index.html'>matches</a></p><script>window.sidebarCurrent = {name: '_tt_as_expr_hack!', ty: 'macro', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'><a href='index.html'>itertools</a></p><script>window.sidebarCurrent = {name: 'all', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -42,17 +42,20 @@
         </form>
     </nav>
 
-    <section id='main' class="content macro">
-<h1 class='fqn'><span class='in-band'><a href='index.html'>matches</a>::<wbr><a class='macro' href=''>_tt_as_expr_hack!</a></span><span class='out-of-band'><span id='render-detail'>
+    <section id='main' class="content fn">
+<h1 class='fqn'><span class='in-band'>Function <a href='index.html'>itertools</a>::<wbr><a class='fn' href=''>all</a></span><span class='out-of-band'><span id='render-detail'>
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-5' class='srclink' href='../src/matches/lib.rs.html#16-18' title='goto source code'>[src]</a></span></h1>
-<pre class='rust macro'>
-<span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>_tt_as_expr_hack</span> {
-    (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>value</span>:<span class='ident'>expr</span>) <span class='op'>=&gt;</span> { ... };
-}</pre>
-<div class='docblock'><p>Work around &quot;error: unexpected token: <code>an interpolated tt</code>&quot;, whatever that means.</p>
+               </span><a id='src-832' class='srclink' href='../src/itertools/free.rs.html#134-139' title='goto source code'>[src]</a></span></h1>
+<pre class='rust fn'>pub fn all&lt;I,&nbsp;F&gt;(iterable: I, f: F) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a> <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/traits/trait.IntoIterator.html' title='core::iter::traits::IntoIterator'>IntoIterator</a>, F: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(I::Item) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></span></pre><div class='docblock'><p>Test whether the predicate holds for all elements in the iterable.</p>
+
+<p><code>IntoIterator</code> enabled version of <code>i.all(f)</code></p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>itertools</span>::<span class='ident'>all</span>;
+
+<span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>all</span>(<span class='kw-2'>&amp;</span>[<span class='number'>1</span>, <span class='number'>2</span>, <span class='number'>3</span>], <span class='op'>|</span><span class='ident'>elt</span><span class='op'>|</span> <span class='op'>*</span><span class='ident'>elt</span> <span class='op'>&gt;</span> <span class='number'>0</span>));</pre>
 </div></section>
     <section id='search' class="content hidden"></section>
 
@@ -108,7 +111,7 @@
 
     <script>
         window.rootPath = "../";
-        window.currentCrate = "matches";
+        window.currentCrate = "itertools";
         window.playgroundUrl = "";
     </script>
     <script src="../jquery.js"></script>

@@ -1124,6 +1124,55 @@
 <span id="1080">1080</span>
 <span id="1081">1081</span>
 <span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
+<span id="1100">1100</span>
+<span id="1101">1101</span>
+<span id="1102">1102</span>
+<span id="1103">1103</span>
+<span id="1104">1104</span>
+<span id="1105">1105</span>
+<span id="1106">1106</span>
+<span id="1107">1107</span>
+<span id="1108">1108</span>
+<span id="1109">1109</span>
+<span id="1110">1110</span>
+<span id="1111">1111</span>
+<span id="1112">1112</span>
+<span id="1113">1113</span>
+<span id="1114">1114</span>
+<span id="1115">1115</span>
+<span id="1116">1116</span>
+<span id="1117">1117</span>
+<span id="1118">1118</span>
+<span id="1119">1119</span>
+<span id="1120">1120</span>
+<span id="1121">1121</span>
+<span id="1122">1122</span>
+<span id="1123">1123</span>
+<span id="1124">1124</span>
+<span id="1125">1125</span>
+<span id="1126">1126</span>
+<span id="1127">1127</span>
+<span id="1128">1128</span>
+<span id="1129">1129</span>
+<span id="1130">1130</span>
+<span id="1131">1131</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -1186,13 +1235,14 @@
     <span class='ident'>src</span>: <span class='ident'>Authority</span>,
     <span class='ident'>dst</span>: <span class='ident'>Authority</span>,
     <span class='ident'>message_id</span>: <span class='ident'>MessageId</span>,
-    <span class='ident'>write_type</span>: <span class='ident'>PendingWriteType</span>,
+    <span class='ident'>mutate_type</span>: <span class='ident'>PendingMutationType</span>,
 }
 
-<span class='kw'>enum</span> <span class='ident'>PendingWriteType</span> {
+<span class='kw'>enum</span> <span class='ident'>PendingMutationType</span> {
     <span class='ident'>Append</span>,
     <span class='ident'>Put</span>,
     <span class='ident'>Post</span>,
+    <span class='ident'>Delete</span>,
 }
 
 <span class='kw'>struct</span> <span class='ident'>Cache</span> {
@@ -1435,7 +1485,7 @@
     <span class='doccomment'>/// data identifier, it returns a refresh message to send to ourselves as a group.</span>
     <span class='kw'>fn</span> <span class='ident'>insert_pending_write</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>,
                             <span class='ident'>data</span>: <span class='ident'>Data</span>,
-                            <span class='ident'>write_type</span>: <span class='ident'>PendingWriteType</span>,
+                            <span class='ident'>mutate_type</span>: <span class='ident'>PendingMutationType</span>,
                             <span class='ident'>src</span>: <span class='ident'>Authority</span>,
                             <span class='ident'>dst</span>: <span class='ident'>Authority</span>,
                             <span class='ident'>msg_id</span>: <span class='ident'>MessageId</span>)
@@ -1449,7 +1499,7 @@
             <span class='ident'>src</span>: <span class='ident'>src</span>,
             <span class='ident'>dst</span>: <span class='ident'>dst</span>,
             <span class='ident'>message_id</span>: <span class='ident'>msg_id</span>,
-            <span class='ident'>write_type</span>: <span class='ident'>write_type</span>,
+            <span class='ident'>mutate_type</span>: <span class='ident'>mutate_type</span>,
         };
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='prelude-val'>None</span>;
         <span class='self'>self</span>.<span class='ident'>pending_writes</span>
@@ -1565,13 +1615,27 @@
                 <span class='ident'>DataIdentifier</span>::<span class='ident'>PubAppendable</span>(..) <span class='op'>|</span>
                 <span class='ident'>DataIdentifier</span>::<span class='ident'>PrivAppendable</span>(..) <span class='op'>|</span>
                 <span class='ident'>DataIdentifier</span>::<span class='ident'>Structured</span>(..) <span class='op'>=&gt;</span> {
-                    <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> <span class='ident'>MutationError</span>::<span class='ident'>DataExists</span>;
-                    <span class='kw'>let</span> <span class='ident'>external_error_indicator</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>error</span>));
-                    <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM sending PutFailure for data {:?}, it already exists.&quot;</span>,
-                           <span class='ident'>data_id</span>);
-                    <span class='kw'>let</span> _ <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>routing_node</span>
-                        .<span class='ident'>send_put_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>external_error_indicator</span>, <span class='ident'>message_id</span>);
-                    <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>From</span>::<span class='ident'>from</span>(<span class='ident'>error</span>));
+                    <span class='kw'>let</span> <span class='ident'>old_data_result</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>chunk_store</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>data_id</span>);
+                    <span class='kw'>let</span> <span class='ident'>overwrite_deleted</span> <span class='op'>=</span> <span class='kw'>match</span> (<span class='ident'>old_data_result</span>, <span class='kw-2'>&amp;</span><span class='ident'>data</span>) {
+                        (<span class='prelude-val'>Ok</span>(<span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='kw-2'>ref</span> <span class='ident'>old_data</span>)), <span class='kw-2'>&amp;</span><span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='kw-2'>ref</span> <span class='ident'>new_data</span>)) <span class='op'>=&gt;</span> {
+                            <span class='ident'>old_data</span>.<span class='ident'>is_deleted</span>() <span class='op'>&amp;&amp;</span>
+                            <span class='ident'>old_data</span>.<span class='ident'>validate_self_against_successor</span>(<span class='ident'>new_data</span>).<span class='ident'>is_ok</span>()
+                        }
+                        _ <span class='op'>=&gt;</span> <span class='bool-val'>false</span>,
+                    };
+                    <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>overwrite_deleted</span> {
+                        <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> <span class='ident'>MutationError</span>::<span class='ident'>DataExists</span>;
+                        <span class='kw'>let</span> <span class='ident'>external_error_indicator</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>error</span>));
+                        <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM sending PutFailure for data {:?}, it already exists.&quot;</span>,
+                               <span class='ident'>data_id</span>);
+                        <span class='kw'>let</span> _ <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>routing_node</span>
+                            .<span class='ident'>send_put_failure</span>(<span class='ident'>dst</span>,
+                                              <span class='ident'>src</span>,
+                                              <span class='ident'>data_id</span>,
+                                              <span class='ident'>external_error_indicator</span>,
+                                              <span class='ident'>message_id</span>);
+                        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>From</span>::<span class='ident'>from</span>(<span class='ident'>error</span>));
+                    }
                 }
                 <span class='ident'>DataIdentifier</span>::<span class='ident'>Immutable</span>(..) <span class='op'>=&gt;</span> {
                     <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM sending PutSuccess for data {:?}, it already exists.&quot;</span>,
@@ -1592,7 +1656,7 @@
                 .<span class='ident'>send_put_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>external_error_indicator</span>, <span class='ident'>message_id</span>);
             <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>From</span>::<span class='ident'>from</span>(<span class='ident'>error</span>));
         }
-        <span class='self'>self</span>.<span class='ident'>update_pending_writes</span>(<span class='ident'>data</span>, <span class='ident'>PendingWriteType</span>::<span class='ident'>Put</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>message_id</span>)
+        <span class='self'>self</span>.<span class='ident'>update_pending_writes</span>(<span class='ident'>data</span>, <span class='ident'>PendingMutationType</span>::<span class='ident'>Put</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>message_id</span>)
     }
 
     <span class='doccomment'>/// Handles a Post request for structured or appendable data.</span>
@@ -1603,6 +1667,16 @@
                        <span class='ident'>message_id</span>: <span class='ident'>MessageId</span>)
                        <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='ident'>data_id</span> <span class='op'>=</span> <span class='ident'>new_data</span>.<span class='ident'>identifier</span>();
+
+        <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>new_data</span>.<span class='ident'>validate_size</span>() {
+            <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> <span class='ident'>MutationError</span>::<span class='ident'>DataTooLarge</span>;
+            <span class='kw'>let</span> <span class='ident'>post_error</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>error</span>));
+            <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM sending post_failure for data {:?}, data exceeds size limit.&quot;</span>,
+                   <span class='ident'>data_id</span>);
+            <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>routing_node</span>
+                .<span class='ident'>send_post_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>post_error</span>, <span class='ident'>message_id</span>)));
+        }
+
         <span class='kw'>let</span> <span class='ident'>update_result</span> <span class='op'>=</span> <span class='kw'>match</span> (<span class='ident'>new_data</span>, <span class='self'>self</span>.<span class='ident'>chunk_store</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>data_id</span>)) {
             (_, <span class='prelude-val'>Err</span>(<span class='ident'>error</span>)) <span class='op'>=&gt;</span> {
                 <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM sending post_failure for: {:?} with {:?} - {:?}&quot;</span>,
@@ -1614,6 +1688,15 @@
                     .<span class='ident'>send_post_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>post_error</span>, <span class='ident'>message_id</span>)));
             }
             (<span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='ident'>new_sd</span>), <span class='prelude-val'>Ok</span>(<span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='kw-2'>mut</span> <span class='ident'>sd</span>))) <span class='op'>=&gt;</span> {
+                <span class='kw'>if</span> <span class='ident'>sd</span>.<span class='ident'>is_deleted</span>() {
+                    <span class='macro'>warn</span><span class='macro'>!</span>(<span class='string'>&quot;Post operation for deleted data. {:?} - {:?}&quot;</span>,
+                          <span class='ident'>data_id</span>,
+                          <span class='ident'>message_id</span>);
+                    <span class='kw'>let</span> <span class='ident'>post_error</span> <span class='op'>=</span>
+                        <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>MutationError</span>::<span class='ident'>InvalidOperation</span>));
+                    <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>routing_node</span>
+                        .<span class='ident'>send_post_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>post_error</span>, <span class='ident'>message_id</span>)));
+                }
                 <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>sd</span>.<span class='ident'>replace_with_other</span>(<span class='ident'>new_sd</span>);
                 <span class='ident'>result</span>.<span class='ident'>map</span>(<span class='op'>|</span>()<span class='op'>|</span> <span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='ident'>sd</span>))
             }
@@ -1629,7 +1712,7 @@
                 <span class='macro'>warn</span><span class='macro'>!</span>(<span class='string'>&quot;Post operation for Invalid Data Type. {:?} - {:?}&quot;</span>,
                       <span class='ident'>data_id</span>,
                       <span class='ident'>message_id</span>);
-                <span class='kw'>let</span> <span class='ident'>post_error</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>MutationError</span>::<span class='ident'>NoSuchData</span>));
+                <span class='kw'>let</span> <span class='ident'>post_error</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>MutationError</span>::<span class='ident'>InvalidOperation</span>));
                 <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>routing_node</span>
                     .<span class='ident'>send_post_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>post_error</span>, <span class='ident'>message_id</span>)));
             }
@@ -1646,7 +1729,7 @@
                     .<span class='ident'>send_post_failure</span>(<span class='ident'>dst</span>.<span class='ident'>clone</span>(), <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>post_error</span>, <span class='ident'>message_id</span>)));
             }
         };
-        <span class='self'>self</span>.<span class='ident'>update_pending_writes</span>(<span class='ident'>data</span>, <span class='ident'>PendingWriteType</span>::<span class='ident'>Post</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>message_id</span>)
+        <span class='self'>self</span>.<span class='ident'>update_pending_writes</span>(<span class='ident'>data</span>, <span class='ident'>PendingMutationType</span>::<span class='ident'>Post</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>message_id</span>)
     }
 
     <span class='doccomment'>/// The structured_data in the delete request must be a valid updating version of the target</span>
@@ -1657,31 +1740,27 @@
                          <span class='ident'>message_id</span>: <span class='ident'>MessageId</span>)
                          <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='ident'>data_id</span> <span class='op'>=</span> <span class='ident'>new_data</span>.<span class='ident'>identifier</span>();
-        <span class='comment'>// TODO: Re-enable delete once the flow has been agreed on.</span>
-        <span class='comment'>// if let Ok(Data::Structured(data)) = self.chunk_store.get(&amp;data_id) {</span>
-        <span class='comment'>//    if data.validate_self_against_successor(&amp;new_data).is_ok() {</span>
-        <span class='comment'>//        if let Ok(()) = self.chunk_store.delete(&amp;data_id) {</span>
-        <span class='comment'>//            self.count_removed_data(&amp;data_id);</span>
-        <span class='comment'>//            trace!(&quot;DM deleted {:?}&quot;, data.identifier());</span>
-        <span class='comment'>//            if self.logging_time.elapsed().as_secs() &gt; STATUS_LOG_INTERVAL {</span>
-        <span class='comment'>//                self.logging_time = Instant::now();</span>
-        <span class='comment'>//                info!(&quot;{:?}&quot;, self);</span>
-        <span class='comment'>//            }</span>
-        <span class='comment'>//            let _ = self.routing_node.send_delete_success(dst, src, data_id, message_id);</span>
-        <span class='comment'>//            // TODO: Send a refresh message.</span>
-        <span class='comment'>//            return Ok(());</span>
-        <span class='comment'>//        }</span>
-        <span class='comment'>//    }</span>
-        <span class='comment'>// }</span>
-        <span class='comment'>// trace!(&quot;DM sending delete_failure for {:?}&quot;, new_data.identifier());</span>
-        <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM currently doesn&#39;t support Delete. Sending delete_failure for {:?}&quot;</span>,
-               <span class='ident'>new_data</span>.<span class='ident'>identifier</span>());
-        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>send_delete_failure</span>(<span class='ident'>dst</span>,
-                                                   <span class='ident'>src</span>,
-                                                   <span class='ident'>data_id</span>,
-                                                   <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(
-                                                           <span class='kw-2'>&amp;</span><span class='ident'>MutationError</span>::<span class='ident'>InvalidSuccessor</span>)),
-                                                   <span class='ident'>message_id</span>));
+
+        <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>chunk_store</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='ident'>data_id</span>) {
+            <span class='prelude-val'>Ok</span>(<span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='kw-2'>mut</span> <span class='ident'>data</span>)) <span class='op'>=&gt;</span> {
+                <span class='kw'>if</span> <span class='ident'>data</span>.<span class='ident'>is_deleted</span>() {
+                    <span class='ident'>MutationError</span>::<span class='ident'>InvalidOperation</span>
+                } <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>data</span>.<span class='ident'>delete_if_valid_successor</span>(<span class='kw-2'>&amp;</span><span class='ident'>new_data</span>).<span class='ident'>is_ok</span>() {
+                    <span class='kw'>return</span> <span class='self'>self</span>.<span class='ident'>update_pending_writes</span>(<span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='ident'>data</span>),
+                                                      <span class='ident'>PendingMutationType</span>::<span class='ident'>Delete</span>,
+                                                      <span class='ident'>src</span>,
+                                                      <span class='ident'>dst</span>,
+                                                      <span class='ident'>message_id</span>);
+                } <span class='kw'>else</span> {
+                    <span class='ident'>MutationError</span>::<span class='ident'>InvalidSuccessor</span>
+                }
+            }
+            <span class='prelude-val'>Ok</span>(_) <span class='op'>=&gt;</span> <span class='ident'>MutationError</span>::<span class='ident'>InvalidOperation</span>,
+            <span class='prelude-val'>Err</span>(_) <span class='op'>=&gt;</span> <span class='ident'>MutationError</span>::<span class='ident'>NoSuchData</span>,
+        };
+        <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM sending delete_failure for {:?}&quot;</span>, <span class='ident'>new_data</span>.<span class='ident'>identifier</span>());
+        <span class='kw'>let</span> <span class='ident'>err_data</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>error</span>));
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>send_delete_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>err_data</span>, <span class='ident'>message_id</span>));
         <span class='prelude-val'>Ok</span>(())
     }
 
@@ -1725,14 +1804,22 @@
         };
 
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>data</span>) <span class='op'>=</span> <span class='ident'>append_result</span> {
-            <span class='self'>self</span>.<span class='ident'>update_pending_writes</span>(<span class='ident'>data</span>, <span class='ident'>PendingWriteType</span>::<span class='ident'>Append</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>message_id</span>)
+            <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>data</span>.<span class='ident'>validate_size</span>() {
+                <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> <span class='ident'>MutationError</span>::<span class='ident'>DataTooLarge</span>;
+                <span class='kw'>let</span> <span class='ident'>append_error</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>error</span>));
+                <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM sending append_failure for data {:?}, data exceeds size limit.&quot;</span>,
+                       <span class='ident'>data_id</span>);
+                <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>routing_node</span>
+                    .<span class='ident'>send_append_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>append_error</span>, <span class='ident'>message_id</span>)));
+            }
+            <span class='self'>self</span>.<span class='ident'>update_pending_writes</span>(<span class='ident'>data</span>, <span class='ident'>PendingMutationType</span>::<span class='ident'>Append</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>message_id</span>)
         } <span class='kw'>else</span> {
             <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM sending append_failure for: {:?} with {:?}&quot;</span>,
                    <span class='ident'>data_id</span>,
                    <span class='ident'>message_id</span>);
             <span class='kw'>let</span> <span class='ident'>append_error</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>MutationError</span>::<span class='ident'>InvalidSuccessor</span>));
             <span class='prelude-val'>Ok</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>routing_node</span>
-                .<span class='ident'>send_append_failure</span>(<span class='ident'>dst</span>.<span class='ident'>clone</span>(), <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>append_error</span>, <span class='ident'>message_id</span>)))
+                .<span class='ident'>send_append_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>append_error</span>, <span class='ident'>message_id</span>)))
         }
     }
 
@@ -1879,35 +1966,43 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>handle_group_refresh</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>serialised_refresh</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='ident'>RefreshData</span>((<span class='ident'>data_id</span>, <span class='ident'>version</span>), <span class='ident'>refresh_hash</span>) <span class='op'>=</span>
             <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>deserialise</span>(<span class='ident'>serialised_refresh</span>));
-        <span class='kw'>for</span> <span class='ident'>PendingWrite</span> { <span class='ident'>data</span>, <span class='ident'>write_type</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>message_id</span>, <span class='ident'>hash</span>, .. } <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>cache</span>
+        <span class='kw'>for</span> <span class='ident'>PendingWrite</span> { <span class='ident'>data</span>, <span class='ident'>mutate_type</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>message_id</span>, <span class='ident'>hash</span>, .. } <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>cache</span>
             .<span class='ident'>take_pending_writes</span>(<span class='kw-2'>&amp;</span><span class='ident'>data_id</span>) {
             <span class='kw'>if</span> <span class='ident'>hash</span> <span class='op'>==</span> <span class='ident'>refresh_hash</span> {
+                <span class='kw'>let</span> <span class='ident'>already_existed</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>chunk_store</span>.<span class='ident'>has</span>(<span class='kw-2'>&amp;</span><span class='ident'>data_id</span>);
                 <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Err</span>(<span class='ident'>error</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>chunk_store</span>.<span class='ident'>put</span>(<span class='kw-2'>&amp;</span><span class='ident'>data_id</span>, <span class='kw-2'>&amp;</span><span class='ident'>data</span>) {
                     <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM failed to store {:?} in chunkstore: {:?}&quot;</span>,
                            <span class='ident'>data_id</span>,
                            <span class='ident'>error</span>);
                     <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> <span class='ident'>MutationError</span>::<span class='ident'>NetworkOther</span>(<span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;Failed to store chunk: {:?}&quot;</span>,
                                                                     <span class='ident'>error</span>));
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>send_failure</span>(<span class='ident'>write_type</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>data_id</span>, <span class='ident'>message_id</span>, <span class='ident'>error</span>));
+                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>send_failure</span>(<span class='ident'>mutate_type</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>data_id</span>, <span class='ident'>message_id</span>, <span class='ident'>error</span>));
                 } <span class='kw'>else</span> {
                     <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM updated for: {:?}&quot;</span>, <span class='ident'>data_id</span>);
-                    <span class='kw'>let</span> _ <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>write_type</span> {
-                        <span class='ident'>PendingWriteType</span>::<span class='ident'>Append</span> <span class='op'>=&gt;</span> {
+                    <span class='kw'>let</span> _ <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>mutate_type</span> {
+                        <span class='ident'>PendingMutationType</span>::<span class='ident'>Append</span> <span class='op'>=&gt;</span> {
                             <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM sending AppendSuccess for data {:?}&quot;</span>, <span class='ident'>data_id</span>);
                             <span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>send_append_success</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>message_id</span>)
                         }
-                        <span class='ident'>PendingWriteType</span>::<span class='ident'>Post</span> <span class='op'>=&gt;</span> {
+                        <span class='ident'>PendingMutationType</span>::<span class='ident'>Post</span> <span class='op'>=&gt;</span> {
                             <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM sending PostSuccess for data {:?}&quot;</span>, <span class='ident'>data_id</span>);
                             <span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>send_post_success</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>message_id</span>)
                         }
-                        <span class='ident'>PendingWriteType</span>::<span class='ident'>Put</span> <span class='op'>=&gt;</span> {
-                            <span class='self'>self</span>.<span class='ident'>count_added_data</span>(<span class='kw-2'>&amp;</span><span class='ident'>data_id</span>);
+                        <span class='ident'>PendingMutationType</span>::<span class='ident'>Put</span> <span class='op'>=&gt;</span> {
+                            <span class='comment'>// Put to a deleted data shall not be counted</span>
+                            <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>already_existed</span> {
+                                <span class='self'>self</span>.<span class='ident'>count_added_data</span>(<span class='kw-2'>&amp;</span><span class='ident'>data_id</span>);
+                            }
                             <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>logging_time</span>.<span class='ident'>elapsed</span>().<span class='ident'>as_secs</span>() <span class='op'>&gt;</span> <span class='ident'>STATUS_LOG_INTERVAL</span> {
                                 <span class='self'>self</span>.<span class='ident'>logging_time</span> <span class='op'>=</span> <span class='ident'>Instant</span>::<span class='ident'>now</span>();
                                 <span class='macro'>info</span><span class='macro'>!</span>(<span class='string'>&quot;{:?}&quot;</span>, <span class='self'>self</span>);
                             }
                             <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM sending PutSuccess for data {:?}&quot;</span>, <span class='ident'>data_id</span>);
                             <span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>send_put_success</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>message_id</span>)
+                        }
+                        <span class='ident'>PendingMutationType</span>::<span class='ident'>Delete</span> <span class='op'>=&gt;</span> {
+                            <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;DM sending DeleteSuccess for data {:?}&quot;</span>, <span class='ident'>data_id</span>);
+                            <span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>send_delete_success</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>message_id</span>)
                         }
                     };
                     <span class='kw'>let</span> <span class='ident'>data_list</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[(<span class='ident'>data_id</span>, <span class='ident'>version</span>)];
@@ -1916,14 +2011,14 @@
             } <span class='kw'>else</span> {
                 <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;{:?} did not accumulate. Sending failure&quot;</span>, <span class='ident'>data_id</span>);
                 <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> <span class='ident'>MutationError</span>::<span class='ident'>NetworkOther</span>(<span class='string'>&quot;Concurrent modification.&quot;</span>.<span class='ident'>to_owned</span>());
-                <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>send_failure</span>(<span class='ident'>write_type</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>data</span>.<span class='ident'>identifier</span>(), <span class='ident'>message_id</span>, <span class='ident'>error</span>));
+                <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>send_failure</span>(<span class='ident'>mutate_type</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>data</span>.<span class='ident'>identifier</span>(), <span class='ident'>message_id</span>, <span class='ident'>error</span>));
             }
         }
         <span class='prelude-val'>Ok</span>(())
     }
 
     <span class='kw'>fn</span> <span class='ident'>send_failure</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>,
-                    <span class='ident'>write_type</span>: <span class='ident'>PendingWriteType</span>,
+                    <span class='ident'>mutate_type</span>: <span class='ident'>PendingMutationType</span>,
                     <span class='ident'>src</span>: <span class='ident'>Authority</span>,
                     <span class='ident'>dst</span>: <span class='ident'>Authority</span>,
                     <span class='ident'>data_id</span>: <span class='ident'>DataIdentifier</span>,
@@ -1931,36 +2026,39 @@
                     <span class='ident'>error</span>: <span class='ident'>MutationError</span>)
                     <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='ident'>write_error</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>error</span>));
-        <span class='prelude-val'>Ok</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='kw'>match</span> <span class='ident'>write_type</span> {
-            <span class='ident'>PendingWriteType</span>::<span class='ident'>Append</span> <span class='op'>=&gt;</span> {
+        <span class='prelude-val'>Ok</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='kw'>match</span> <span class='ident'>mutate_type</span> {
+            <span class='ident'>PendingMutationType</span>::<span class='ident'>Append</span> <span class='op'>=&gt;</span> {
                 <span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>send_append_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>write_error</span>, <span class='ident'>message_id</span>)
             }
-            <span class='ident'>PendingWriteType</span>::<span class='ident'>Post</span> <span class='op'>=&gt;</span> {
+            <span class='ident'>PendingMutationType</span>::<span class='ident'>Post</span> <span class='op'>=&gt;</span> {
                 <span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>send_post_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>write_error</span>, <span class='ident'>message_id</span>)
             }
-            <span class='ident'>PendingWriteType</span>::<span class='ident'>Put</span> <span class='op'>=&gt;</span> {
+            <span class='ident'>PendingMutationType</span>::<span class='ident'>Put</span> <span class='op'>=&gt;</span> {
                 <span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>send_put_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>write_error</span>, <span class='ident'>message_id</span>)
+            }
+            <span class='ident'>PendingMutationType</span>::<span class='ident'>Delete</span> <span class='op'>=&gt;</span> {
+                <span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>send_delete_failure</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>write_error</span>, <span class='ident'>message_id</span>)
             }
         }))
     }
 
     <span class='kw'>fn</span> <span class='ident'>update_pending_writes</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>,
                              <span class='ident'>data</span>: <span class='ident'>Data</span>,
-                             <span class='ident'>write_type</span>: <span class='ident'>PendingWriteType</span>,
+                             <span class='ident'>mutate_type</span>: <span class='ident'>PendingMutationType</span>,
                              <span class='ident'>src</span>: <span class='ident'>Authority</span>,
                              <span class='ident'>dst</span>: <span class='ident'>Authority</span>,
                              <span class='ident'>message_id</span>: <span class='ident'>MessageId</span>)
                              <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>InternalError</span><span class='op'>&gt;</span> {
-        <span class='kw'>for</span> <span class='ident'>PendingWrite</span> { <span class='ident'>write_type</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>data</span>, <span class='ident'>message_id</span>, .. } <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>cache</span>
+        <span class='kw'>for</span> <span class='ident'>PendingWrite</span> { <span class='ident'>mutate_type</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>data</span>, <span class='ident'>message_id</span>, .. } <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>cache</span>
             .<span class='ident'>remove_expired_writes</span>() {
             <span class='kw'>let</span> <span class='ident'>data_id</span> <span class='op'>=</span> <span class='ident'>data</span>.<span class='ident'>identifier</span>();
             <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> <span class='ident'>MutationError</span>::<span class='ident'>NetworkOther</span>(<span class='string'>&quot;Request expired.&quot;</span>.<span class='ident'>to_owned</span>());
             <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;{:?} did not accumulate. Sending failure&quot;</span>, <span class='ident'>data_id</span>);
-            <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>send_failure</span>(<span class='ident'>write_type</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>data_id</span>, <span class='ident'>message_id</span>, <span class='ident'>error</span>));
+            <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>send_failure</span>(<span class='ident'>mutate_type</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>data_id</span>, <span class='ident'>message_id</span>, <span class='ident'>error</span>));
         }
         <span class='kw'>let</span> <span class='ident'>data_name</span> <span class='op'>=</span> <span class='op'>*</span><span class='ident'>data</span>.<span class='ident'>name</span>();
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>refresh_data</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>cache</span>
-            .<span class='ident'>insert_pending_write</span>(<span class='ident'>data</span>, <span class='ident'>write_type</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>message_id</span>) {
+            .<span class='ident'>insert_pending_write</span>(<span class='ident'>data</span>, <span class='ident'>mutate_type</span>, <span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>message_id</span>) {
             <span class='kw'>let</span> _ <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>send_group_refresh</span>(<span class='ident'>data_name</span>, <span class='ident'>refresh_data</span>, <span class='ident'>message_id</span>);
         }
         <span class='prelude-val'>Ok</span>(())

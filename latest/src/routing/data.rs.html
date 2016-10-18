@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-88ac128001ac3a9a/routing-0.18.3/src/data.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/routing-0.27.1/src/data.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>data.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     <link rel="shortcut icon" href="http://maidsafe.net/img/favicon.ico">
     
@@ -230,34 +231,6 @@
 <span id="187">187</span>
 <span id="188">188</span>
 <span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
-<span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
-<span id="204">204</span>
-<span id="205">205</span>
-<span id="206">206</span>
-<span id="207">207</span>
-<span id="208">208</span>
-<span id="209">209</span>
-<span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -277,11 +250,23 @@
 <span class='comment'>// relating to use of the SAFE Network Software.</span>
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>::{<span class='self'>self</span>, <span class='ident'>Debug</span>, <span class='ident'>Formatter</span>};
-<span class='kw'>use</span> <span class='ident'>rustc_serialize</span>::{<span class='ident'>Decoder</span>, <span class='ident'>Encoder</span>};
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>structured_data</span>::<span class='ident'>StructuredData</span>;
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>immutable_data</span>::{<span class='ident'>ImmutableData</span>, <span class='ident'>ImmutableDataBackup</span>, <span class='ident'>ImmutableDataSacrificial</span>};
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>immutable_data</span>::<span class='ident'>ImmutableData</span>;
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>plain_data</span>::<span class='ident'>PlainData</span>;
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>priv_appendable_data</span>::<span class='ident'>PrivAppendableData</span>;
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>pub_appendable_data</span>::<span class='ident'>PubAppendableData</span>;
 <span class='kw'>use</span> <span class='ident'>xor_name</span>::<span class='ident'>XorName</span>;
+<span class='kw'>use</span> <span class='ident'>rust_sodium</span>::<span class='ident'>crypto</span>::<span class='ident'>sign</span>;
+
+<span class='doccomment'>/// A signing key with no matching private key. Passing ownership to it will make a chunk</span>
+<span class='doccomment'>/// effectively immutable.</span>
+<span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>NO_OWNER_PUB_KEY</span>: <span class='ident'>sign</span>::<span class='ident'>PublicKey</span> <span class='op'>=</span> <span class='ident'>sign</span>::<span class='ident'>PublicKey</span>([<span class='number'>0</span>; <span class='ident'>sign</span>::<span class='ident'>PUBLICKEYBYTES</span>]);
+
+<span class='comment'>// Returns whether the signature is valid. It explicitly considers any signature for</span>
+<span class='comment'>// `NO_OWNER_PUB_KEY` invalid.</span>
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>verify_detached</span>(<span class='ident'>sig</span>: <span class='kw-2'>&amp;</span><span class='ident'>sign</span>::<span class='ident'>Signature</span>, <span class='ident'>data</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>pub_key</span>: <span class='kw-2'>&amp;</span><span class='ident'>sign</span>::<span class='ident'>PublicKey</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
+    <span class='op'>*</span><span class='ident'>pub_key</span> <span class='op'>!=</span> <span class='ident'>NO_OWNER_PUB_KEY</span> <span class='op'>&amp;&amp;</span> <span class='ident'>sign</span>::<span class='ident'>verify_detached</span>(<span class='ident'>sig</span>, <span class='ident'>data</span>, <span class='ident'>pub_key</span>)
+}
 
 <span class='doccomment'>/// This is the data types routing handles in the public interface</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Hash</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialOrd</span>, <span class='ident'>Ord</span>, <span class='ident'>Clone</span>, <span class='ident'>RustcEncodable</span>, <span class='ident'>RustcDecodable</span>)]</span>
@@ -290,23 +275,23 @@
     <span class='ident'>Structured</span>(<span class='ident'>StructuredData</span>),
     <span class='doccomment'>/// `ImmutableData` data type.</span>
     <span class='ident'>Immutable</span>(<span class='ident'>ImmutableData</span>),
-    <span class='doccomment'>/// `ImmutableData` data type - backup copy.</span>
-    <span class='ident'>ImmutableBackup</span>(<span class='ident'>ImmutableDataBackup</span>),
-    <span class='doccomment'>/// `ImmutableData` data type - sacrificial copy.</span>
-    <span class='ident'>ImmutableSacrificial</span>(<span class='ident'>ImmutableDataSacrificial</span>),
     <span class='doccomment'>/// `PlainData` data type.</span>
     <span class='ident'>Plain</span>(<span class='ident'>PlainData</span>),
+    <span class='doccomment'>/// `PubAppendableData` data type.</span>
+    <span class='ident'>PubAppendable</span>(<span class='ident'>PubAppendableData</span>),
+    <span class='doccomment'>/// `PrivAppendableData` data type.</span>
+    <span class='ident'>PrivAppendable</span>(<span class='ident'>PrivAppendableData</span>),
 }
 
 <span class='kw'>impl</span> <span class='ident'>Data</span> {
     <span class='doccomment'>/// Return data name.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>name</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>XorName</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>name</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>XorName</span> {
         <span class='kw'>match</span> <span class='op'>*</span><span class='self'>self</span> {
             <span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>name</span>(),
             <span class='ident'>Data</span>::<span class='ident'>Immutable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>name</span>(),
-            <span class='ident'>Data</span>::<span class='ident'>ImmutableBackup</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>name</span>(),
-            <span class='ident'>Data</span>::<span class='ident'>ImmutableSacrificial</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>name</span>(),
             <span class='ident'>Data</span>::<span class='ident'>Plain</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>name</span>(),
+            <span class='ident'>Data</span>::<span class='ident'>PubAppendable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>name</span>(),
+            <span class='ident'>Data</span>::<span class='ident'>PrivAppendable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>name</span>(),
         }
     }
 
@@ -315,20 +300,20 @@
         <span class='kw'>match</span> <span class='op'>*</span><span class='self'>self</span> {
             <span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>identifier</span>(),
             <span class='ident'>Data</span>::<span class='ident'>Immutable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>identifier</span>(),
-            <span class='ident'>Data</span>::<span class='ident'>ImmutableBackup</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>identifier</span>(),
-            <span class='ident'>Data</span>::<span class='ident'>ImmutableSacrificial</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>identifier</span>(),
             <span class='ident'>Data</span>::<span class='ident'>Plain</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>identifier</span>(),
+            <span class='ident'>Data</span>::<span class='ident'>PubAppendable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>identifier</span>(),
+            <span class='ident'>Data</span>::<span class='ident'>PrivAppendable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>identifier</span>(),
         }
     }
 
-    <span class='doccomment'>/// Return data size.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>payload_size</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
+    <span class='doccomment'>/// Validate data size.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>validate_size</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
         <span class='kw'>match</span> <span class='op'>*</span><span class='self'>self</span> {
-            <span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>payload_size</span>(),
-            <span class='ident'>Data</span>::<span class='ident'>Immutable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>payload_size</span>(),
-            <span class='ident'>Data</span>::<span class='ident'>ImmutableBackup</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>payload_size</span>(),
-            <span class='ident'>Data</span>::<span class='ident'>ImmutableSacrificial</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>payload_size</span>(),
-            <span class='ident'>Data</span>::<span class='ident'>Plain</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>payload_size</span>(),
+            <span class='ident'>Data</span>::<span class='ident'>Immutable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>validate_size</span>(),
+            <span class='ident'>Data</span>::<span class='ident'>PrivAppendable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>validate_size</span>(),
+            <span class='ident'>Data</span>::<span class='ident'>PubAppendable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>validate_size</span>(),
+            <span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>validate_size</span>(),
+            _ <span class='op'>=&gt;</span> <span class='macro'>unimplemented</span><span class='macro'>!</span>(),
         }
     }
 }
@@ -340,12 +325,12 @@
     <span class='ident'>Structured</span>(<span class='ident'>XorName</span>, <span class='ident'>u64</span>),
     <span class='doccomment'>/// Data request, (Identifier), for `ImmutableData`.</span>
     <span class='ident'>Immutable</span>(<span class='ident'>XorName</span>),
-    <span class='doccomment'>/// Data request, (Identifier), for a backup copy of `ImmutableData`.</span>
-    <span class='ident'>ImmutableBackup</span>(<span class='ident'>XorName</span>),
-    <span class='doccomment'>/// Data request, (Identifier), for a sacrificial copy of `ImmutableData`.</span>
-    <span class='ident'>ImmutableSacrificial</span>(<span class='ident'>XorName</span>),
     <span class='doccomment'>/// Request for PlainData.</span>
     <span class='ident'>Plain</span>(<span class='ident'>XorName</span>),
+    <span class='doccomment'>/// Request for public appendable data.</span>
+    <span class='ident'>PubAppendable</span>(<span class='ident'>XorName</span>),
+    <span class='doccomment'>/// Request for private appendable data.</span>
+    <span class='ident'>PrivAppendable</span>(<span class='ident'>XorName</span>),
 }
 
 <span class='kw'>impl</span> <span class='ident'>Debug</span> <span class='kw'>for</span> <span class='ident'>Data</span> {
@@ -353,22 +338,22 @@
         <span class='kw'>match</span> <span class='op'>*</span><span class='self'>self</span> {
             <span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>fmt</span>(<span class='ident'>formatter</span>),
             <span class='ident'>Data</span>::<span class='ident'>Immutable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>fmt</span>(<span class='ident'>formatter</span>),
-            <span class='ident'>Data</span>::<span class='ident'>ImmutableBackup</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>fmt</span>(<span class='ident'>formatter</span>),
-            <span class='ident'>Data</span>::<span class='ident'>ImmutableSacrificial</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>fmt</span>(<span class='ident'>formatter</span>),
             <span class='ident'>Data</span>::<span class='ident'>Plain</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>fmt</span>(<span class='ident'>formatter</span>),
+            <span class='ident'>Data</span>::<span class='ident'>PubAppendable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>fmt</span>(<span class='ident'>formatter</span>),
+            <span class='ident'>Data</span>::<span class='ident'>PrivAppendable</span>(<span class='kw-2'>ref</span> <span class='ident'>data</span>) <span class='op'>=&gt;</span> <span class='ident'>data</span>.<span class='ident'>fmt</span>(<span class='ident'>formatter</span>),
         }
     }
 }
 
 <span class='kw'>impl</span> <span class='ident'>DataIdentifier</span> {
     <span class='doccomment'>/// DataIdentifier name.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>name</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>XorName</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>name</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>XorName</span> {
         <span class='kw'>match</span> <span class='op'>*</span><span class='self'>self</span> {
-            <span class='ident'>DataIdentifier</span>::<span class='ident'>Structured</span>(<span class='ident'>name</span>, <span class='ident'>tag</span>) <span class='op'>=&gt;</span> <span class='ident'>StructuredData</span>::<span class='ident'>compute_name</span>(<span class='ident'>tag</span>, <span class='kw-2'>&amp;</span><span class='ident'>name</span>),
-            <span class='ident'>DataIdentifier</span>::<span class='ident'>Immutable</span>(<span class='ident'>name</span>) <span class='op'>|</span>
-            <span class='ident'>DataIdentifier</span>::<span class='ident'>ImmutableBackup</span>(<span class='ident'>name</span>) <span class='op'>|</span>
-            <span class='ident'>DataIdentifier</span>::<span class='ident'>ImmutableSacrificial</span>(<span class='ident'>name</span>) <span class='op'>|</span>
-            <span class='ident'>DataIdentifier</span>::<span class='ident'>Plain</span>(<span class='ident'>name</span>) <span class='op'>=&gt;</span> <span class='ident'>name</span>,
+            <span class='ident'>DataIdentifier</span>::<span class='ident'>Structured</span>(<span class='kw-2'>ref</span> <span class='ident'>name</span>, _) <span class='op'>|</span>
+            <span class='ident'>DataIdentifier</span>::<span class='ident'>Immutable</span>(<span class='kw-2'>ref</span> <span class='ident'>name</span>) <span class='op'>|</span>
+            <span class='ident'>DataIdentifier</span>::<span class='ident'>Plain</span>(<span class='kw-2'>ref</span> <span class='ident'>name</span>) <span class='op'>|</span>
+            <span class='ident'>DataIdentifier</span>::<span class='ident'>PubAppendable</span>(<span class='kw-2'>ref</span> <span class='ident'>name</span>) <span class='op'>|</span>
+            <span class='ident'>DataIdentifier</span>::<span class='ident'>PrivAppendable</span>(<span class='kw-2'>ref</span> <span class='ident'>name</span>) <span class='op'>=&gt;</span> <span class='ident'>name</span>,
         }
     }
 }
@@ -377,9 +362,9 @@
 <span class='kw'>mod</span> <span class='ident'>test</span> {
     <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rand</span>;
 
-    <span class='kw'>use</span> <span class='ident'>super</span>::<span class='op'>*</span>;
-    <span class='kw'>use</span> <span class='ident'>sodiumoxide</span>::<span class='ident'>crypto</span>::<span class='ident'>sign</span>;
-    <span class='kw'>use</span> <span class='ident'>sodiumoxide</span>::<span class='ident'>crypto</span>::<span class='ident'>hash</span>::<span class='ident'>sha512</span>;
+    <span class='kw'>use</span> <span class='kw'>super</span>::<span class='op'>*</span>;
+    <span class='kw'>use</span> <span class='ident'>rust_sodium</span>::<span class='ident'>crypto</span>::<span class='ident'>sign</span>;
+    <span class='kw'>use</span> <span class='ident'>rust_sodium</span>::<span class='ident'>crypto</span>::<span class='ident'>hash</span>::<span class='ident'>sha256</span>;
     <span class='kw'>use</span> <span class='ident'>xor_name</span>::<span class='ident'>XorName</span>;
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
@@ -397,7 +382,7 @@
             <span class='prelude-val'>Ok</span>(<span class='ident'>structured_data</span>) <span class='op'>=&gt;</span> {
                 <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>structured_data</span>.<span class='ident'>clone</span>().<span class='ident'>name</span>(),
                            <span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='ident'>structured_data</span>.<span class='ident'>clone</span>()).<span class='ident'>name</span>());
-                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>DataIdentifier</span>::<span class='ident'>Structured</span>(<span class='op'>*</span><span class='ident'>structured_data</span>.<span class='ident'>get_identifier</span>(),
+                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>DataIdentifier</span>::<span class='ident'>Structured</span>(<span class='op'>*</span><span class='ident'>structured_data</span>.<span class='ident'>name</span>(),
                                                       <span class='ident'>structured_data</span>.<span class='ident'>get_type_tag</span>()),
                            <span class='ident'>structured_data</span>.<span class='ident'>identifier</span>());
             }
@@ -411,69 +396,29 @@
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>immutable_data</span>.<span class='ident'>name</span>(),
                    <span class='ident'>Data</span>::<span class='ident'>Immutable</span>(<span class='ident'>immutable_data</span>.<span class='ident'>clone</span>()).<span class='ident'>name</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>immutable_data</span>.<span class='ident'>identifier</span>(),
-                   <span class='ident'>DataIdentifier</span>::<span class='ident'>Immutable</span>(<span class='ident'>immutable_data</span>.<span class='ident'>name</span>()));
+                   <span class='ident'>DataIdentifier</span>::<span class='ident'>Immutable</span>(<span class='op'>*</span><span class='ident'>immutable_data</span>.<span class='ident'>name</span>()));
 
-        <span class='kw'>let</span> <span class='ident'>backup_data</span> <span class='op'>=</span> <span class='ident'>ImmutableDataBackup</span>::<span class='ident'>new</span>(<span class='ident'>immutable_data</span>.<span class='ident'>clone</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>backup_data</span>.<span class='ident'>identifier</span>(),
-                   <span class='ident'>DataIdentifier</span>::<span class='ident'>ImmutableBackup</span>(<span class='ident'>backup_data</span>.<span class='ident'>name</span>()));
-        <span class='kw'>let</span> <span class='ident'>sacrificial_data</span> <span class='op'>=</span> <span class='ident'>ImmutableDataSacrificial</span>::<span class='ident'>new</span>(<span class='ident'>immutable_data</span>.<span class='ident'>clone</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>sacrificial_data</span>.<span class='ident'>identifier</span>(),
-                   <span class='ident'>DataIdentifier</span>::<span class='ident'>ImmutableSacrificial</span>(<span class='ident'>sacrificial_data</span>.<span class='ident'>name</span>()));
         <span class='comment'>// name() resolves correctly for PlainData</span>
-        <span class='kw'>let</span> <span class='ident'>name</span> <span class='op'>=</span> <span class='ident'>XorName</span>(<span class='ident'>sha512</span>::<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span>[]).<span class='number'>0</span>);
+        <span class='kw'>let</span> <span class='ident'>name</span> <span class='op'>=</span> <span class='ident'>XorName</span>(<span class='ident'>sha256</span>::<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span>[]).<span class='number'>0</span>);
         <span class='kw'>let</span> <span class='ident'>plain_data</span> <span class='op'>=</span> <span class='ident'>PlainData</span>::<span class='ident'>new</span>(<span class='ident'>name</span>, <span class='macro'>vec</span><span class='macro'>!</span>[]);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>plain_data</span>.<span class='ident'>name</span>(), <span class='ident'>Data</span>::<span class='ident'>Plain</span>(<span class='ident'>plain_data</span>.<span class='ident'>clone</span>()).<span class='ident'>name</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>plain_data</span>.<span class='ident'>identifier</span>(),
-                   <span class='ident'>DataIdentifier</span>::<span class='ident'>Plain</span>(<span class='ident'>plain_data</span>.<span class='ident'>name</span>()));
-    }
-
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>data_payload_size</span>() {
-        <span class='comment'>// payload_size() resolves correctly for StructuredData</span>
-        <span class='kw'>let</span> <span class='ident'>keys</span> <span class='op'>=</span> ::<span class='ident'>sodiumoxide</span>::<span class='ident'>crypto</span>::<span class='ident'>sign</span>::<span class='ident'>gen_keypair</span>();
-        <span class='kw'>let</span> <span class='ident'>owner_keys</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>keys</span>.<span class='number'>0</span>];
-        <span class='kw'>match</span> <span class='ident'>StructuredData</span>::<span class='ident'>new</span>(<span class='number'>0</span>,
-                                  <span class='ident'>rand</span>::<span class='ident'>random</span>(),
-                                  <span class='number'>0</span>,
-                                  <span class='macro'>vec</span><span class='macro'>!</span>[],
-                                  <span class='ident'>owner_keys</span>.<span class='ident'>clone</span>(),
-                                  <span class='macro'>vec</span><span class='macro'>!</span>[],
-                                  <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='ident'>keys</span>.<span class='number'>1</span>)) {
-            <span class='prelude-val'>Ok</span>(<span class='ident'>structured_data</span>) <span class='op'>=&gt;</span> {
-                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>structured_data</span>.<span class='ident'>payload_size</span>(),
-                           <span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='ident'>structured_data</span>).<span class='ident'>payload_size</span>());
-            }
-            <span class='prelude-val'>Err</span>(<span class='ident'>error</span>) <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;Error: {:?}&quot;</span>, <span class='ident'>error</span>),
-        }
-
-        <span class='comment'>// payload_size() resolves correctly for ImmutableData</span>
-        <span class='kw'>let</span> <span class='ident'>value</span> <span class='op'>=</span> <span class='string'>&quot;immutable data value&quot;</span>.<span class='ident'>to_owned</span>().<span class='ident'>into_bytes</span>();
-        <span class='kw'>let</span> <span class='ident'>immutable_data</span> <span class='op'>=</span> <span class='ident'>ImmutableData</span>::<span class='ident'>new</span>(<span class='ident'>value</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>immutable_data</span>.<span class='ident'>payload_size</span>(),
-                   <span class='ident'>Data</span>::<span class='ident'>Immutable</span>(<span class='ident'>immutable_data</span>).<span class='ident'>payload_size</span>());
-
-        <span class='comment'>// payload_size() resolves correctly for PlainData</span>
-        <span class='kw'>let</span> <span class='ident'>name</span> <span class='op'>=</span> <span class='ident'>XorName</span>(<span class='ident'>sha512</span>::<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span>[]).<span class='number'>0</span>);
-        <span class='kw'>let</span> <span class='ident'>plain_data</span> <span class='op'>=</span> <span class='ident'>PlainData</span>::<span class='ident'>new</span>(<span class='ident'>name</span>, <span class='macro'>vec</span><span class='macro'>!</span>[]);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>plain_data</span>.<span class='ident'>payload_size</span>(),
-                   <span class='ident'>Data</span>::<span class='ident'>Plain</span>(<span class='ident'>plain_data</span>).<span class='ident'>payload_size</span>());
+                   <span class='ident'>DataIdentifier</span>::<span class='ident'>Plain</span>(<span class='op'>*</span><span class='ident'>plain_data</span>.<span class='ident'>name</span>()));
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>data_request_name</span>() {
-        <span class='kw'>let</span> <span class='ident'>name</span> <span class='op'>=</span> <span class='ident'>XorName</span>(<span class='ident'>sha512</span>::<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span>[]).<span class='number'>0</span>);
+        <span class='kw'>let</span> <span class='ident'>name</span> <span class='op'>=</span> <span class='ident'>XorName</span>(<span class='ident'>sha256</span>::<span class='ident'>hash</span>(<span class='kw-2'>&amp;</span>[]).<span class='number'>0</span>);
 
-        <span class='comment'>// name() resolves correctly for StructuedData</span>
+        <span class='comment'>// name() resolves correctly for StructuredData</span>
         <span class='kw'>let</span> <span class='ident'>tag</span> <span class='op'>=</span> <span class='number'>0</span>;
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>StructuredData</span>::<span class='ident'>compute_name</span>(<span class='ident'>tag</span>, <span class='kw-2'>&amp;</span><span class='ident'>name</span>),
-                   <span class='ident'>DataIdentifier</span>::<span class='ident'>Structured</span>(<span class='ident'>name</span>, <span class='ident'>tag</span>).<span class='ident'>name</span>());
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>name</span>, <span class='ident'>DataIdentifier</span>::<span class='ident'>Structured</span>(<span class='ident'>name</span>, <span class='ident'>tag</span>).<span class='ident'>name</span>());
 
         <span class='comment'>// name() resolves correctly for ImmutableData</span>
-        <span class='kw'>let</span> <span class='ident'>actual_name</span> <span class='op'>=</span> <span class='ident'>DataIdentifier</span>::<span class='ident'>Immutable</span>(<span class='ident'>name</span>).<span class='ident'>name</span>();
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>name</span>, <span class='ident'>actual_name</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>name</span>, <span class='ident'>DataIdentifier</span>::<span class='ident'>Immutable</span>(<span class='ident'>name</span>).<span class='ident'>name</span>());
 
         <span class='comment'>// name() resolves correctly for PlainData</span>
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>name</span>, <span class='ident'>DataIdentifier</span>::<span class='ident'>Plain</span>(<span class='ident'>name</span>).<span class='ident'>name</span>());
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>name</span>, <span class='ident'>DataIdentifier</span>::<span class='ident'>Plain</span>(<span class='ident'>name</span>).<span class='ident'>name</span>());
     }
 }
 </pre>
@@ -500,6 +445,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

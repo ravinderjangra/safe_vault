@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../main.css">
+    
 
     
     
@@ -43,16 +44,17 @@
 
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>docopt</a>::<wbr><a class='struct' href=''>Docopt</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-93' class='srclink' href='../src/docopt/dopt.rs.html#160-166' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-113' class='srclink' href='../src/docopt/dopt.rs.html#162-168' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct Docopt {
     // some fields omitted
 }</pre><div class='docblock'><p>The main Docopt type, which is constructed with a Docopt usage string.</p>
 
 <p>This can be used to match command line arguments to produce a <code>ArgvMap</code>.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../docopt/struct.Docopt.html' title='docopt::Docopt'>Docopt</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>&lt;S&gt;(usage: S) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../docopt/struct.Docopt.html' title='docopt::Docopt'>Docopt</a>, <a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a>&gt; <span class='where'>where S: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Deref.html' title='core::ops::Deref'>Deref</a>&lt;Target=<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>&gt;</span></code></h4>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../docopt/struct.Docopt.html' title='docopt::Docopt'>Docopt</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-119' class='srclink' href='../src/docopt/dopt.rs.html#170-314' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>&lt;S&gt;(usage: S) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../docopt/struct.Docopt.html' title='docopt::Docopt'>Docopt</a>,&nbsp;<a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a>&gt; <span class='where'>where S: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Deref.html' title='core::ops::Deref'>Deref</a>&lt;Target=<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>&gt;</span></code></h4>
 <div class='docblock'><p>Parse the Docopt usage string given.</p>
 
 <p>The <code>Docopt</code> value returned may be used immediately to parse command
@@ -60,7 +62,7 @@ line arguments with a default configuration.</p>
 
 <p>If there was a problem parsing the usage string, a <code>Usage</code> error
 is returned.</p>
-</div><h4 id='method.decode' class='method'><code>fn <a href='#method.decode' class='fnname'>decode</a>&lt;D&gt;(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;D, <a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a>&gt; <span class='where'>where D: <a class='trait' href='../rustc_serialize/serialize/trait.Decodable.html' title='rustc_serialize::serialize::Decodable'>Decodable</a></span></code></h4>
+</div><h4 id='method.decode' class='method'><code>fn <a href='#method.decode' class='fnname'>decode</a>&lt;D&gt;(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;D,&nbsp;<a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a>&gt; <span class='where'>where D: <a class='trait' href='../rustc_serialize/serialize/trait.Decodable.html' title='rustc_serialize::serialize::Decodable'>Decodable</a></span></code></h4>
 <div class='docblock'><p>Parse and decode the given argv.</p>
 
 <p>This is a convenience method for
@@ -68,7 +70,7 @@ is returned.</p>
 
 <p>For details on how decoding works, please see the documentation for
 <code>ArgvMap</code>.</p>
-</div><h4 id='method.parse' class='method'><code>fn <a href='#method.parse' class='fnname'>parse</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../docopt/struct.ArgvMap.html' title='docopt::ArgvMap'>ArgvMap</a>, <a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a>&gt;</code></h4>
+</div><h4 id='method.parse' class='method'><code>fn <a href='#method.parse' class='fnname'>parse</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../docopt/struct.ArgvMap.html' title='docopt::ArgvMap'>ArgvMap</a>,&nbsp;<a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a>&gt;</code></h4>
 <div class='docblock'><p>Parse command line arguments and try to match them against a usage
 pattern specified in the Docopt string.</p>
 
@@ -83,7 +85,7 @@ error is returned. Both of these errors are always returned inside a
 <p>If special handling of <code>help</code> or <code>version</code> is enabled (the former is
 enabled by default), then <code>Help</code> or <code>Version</code> errors are returned
 if <code>--help</code> or <code>--version</code> is present.</p>
-</div><h4 id='method.argv' class='method'><code>fn <a href='#method.argv' class='fnname'>argv</a>&lt;I, S&gt;(self, argv: I) -&gt; <a class='struct' href='../docopt/struct.Docopt.html' title='docopt::Docopt'>Docopt</a> <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.IntoIterator.html' title='core::iter::IntoIterator'>IntoIterator</a>&lt;Item=S&gt;, S: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html' title='core::convert::AsRef'>AsRef</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>&gt;</span></code></h4>
+</div><h4 id='method.argv' class='method'><code>fn <a href='#method.argv' class='fnname'>argv</a>&lt;I,&nbsp;S&gt;(self, argv: I) -&gt; <a class='struct' href='../docopt/struct.Docopt.html' title='docopt::Docopt'>Docopt</a> <span class='where'>where I: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/traits/trait.IntoIterator.html' title='core::iter::traits::IntoIterator'>IntoIterator</a>&lt;Item=S&gt;, S: <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html' title='core::convert::AsRef'>AsRef</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>&gt;</span></code></h4>
 <div class='docblock'><p>Set the argv to be used for Docopt parsing.</p>
 
 <p>By default, when no argv is set, and it is automatically taken from
@@ -120,10 +122,15 @@ convenient quit the program (which will print the version to stdout).</p>
 
 <p>When disabled (a <code>None</code> value), there is no special handling of
 <code>--version</code>.</p>
-</div></div><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../docopt/struct.Docopt.html' title='docopt::Docopt'>Docopt</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
-</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../docopt/struct.Docopt.html' title='docopt::Docopt'>Docopt</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../docopt/struct.Docopt.html' title='docopt::Docopt'>Docopt</a></code></h4>
-<h4 id='method.clone_from' class='method'><span class="since">1.0.0</span><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
-</div></section>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../docopt/struct.Docopt.html' title='docopt::Docopt'>Docopt</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-95' class='srclink' href='../src/docopt/dopt.rs.html#161' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+<div class='docblock'><p>Formats the value using the given formatter.</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../docopt/struct.Docopt.html' title='docopt::Docopt'>Docopt</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-105' class='srclink' href='../src/docopt/dopt.rs.html#161' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../docopt/struct.Docopt.html' title='docopt::Docopt'>Docopt</a></code></h4>
+<div class='docblock'><p>Returns a copy of the value. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone">Read more</a></p>
+</div><h4 id='method.clone_from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></h4>
+<div class='docblock'><p>Performs copy-assignment from <code>source</code>. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from">Read more</a></p>
+</div></div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -146,6 +153,8 @@ convenient quit the program (which will print the version to stdout).</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

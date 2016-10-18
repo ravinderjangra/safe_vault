@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../main.css">
+    
 
     
     
@@ -43,16 +44,16 @@
 
     <section id='main' class="content enum">
 <h1 class='fqn'><span class='in-band'>Enum <a href='index.html'>docopt</a>::<wbr><a class='enum' href=''>Error</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-19' class='srclink' href='../src/docopt/dopt.rs.html#41-82' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-38' class='srclink' href='../src/docopt/dopt.rs.html#43-84' title='goto source code'>[src]</a></span></h1>
 <pre class='rust enum'>pub enum Error {
     Usage(<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>),
     Argv(<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>),
     NoMatch,
     Decode(<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>),
-    WithProgramUsage(<a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a>&gt;, <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>),
+    WithProgramUsage(<a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a>&gt;,&nbsp;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>),
     Help,
     Version(<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>),
 }</pre><div class='docblock'><p>Represents the different types of Docopt errors.</p>
@@ -80,34 +81,35 @@ Usage: ...
                   .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>d</span><span class='op'>|</span> <span class='ident'>d</span>.<span class='ident'>parse</span>())
                   .<span class='ident'>unwrap_or_else</span>(<span class='op'>|</span><span class='ident'>e</span><span class='op'>|</span> <span class='ident'>e</span>.<span class='ident'>exit</span>());</pre>
 </div><h2 class='variants'>Variants</h2>
-<table class='variants_table'><tr><td id='variant.Usage'><code>Usage</code></td><td><div class='docblock'><p>Parsing the usage string failed.</p>
+<span id='variant.Usage' class='variant'><code>Usage(<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>)</code></span><div class='docblock'><p>Parsing the usage string failed.</p>
 
 <p>This error can only be triggered by the programmer, i.e., the writer
 of the Docopt usage string. This error is usually indicative of a bug
 in your program.</p>
-</div></td><td></td></tr><tr><td id='variant.Argv'><code>Argv</code></td><td><div class='docblock'><p>Parsing the argv specified failed.</p>
+</div><span id='variant.Argv' class='variant'><code>Argv(<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>)</code></span><div class='docblock'><p>Parsing the argv specified failed.</p>
 
 <p>The payload is a string describing why the arguments provided could not
 be parsed.</p>
 
 <p>This is distinct from <code>NoMatch</code> because it will catch errors like
 using flags that aren&#39;t defined in the usage string.</p>
-</div></td><td></td></tr><tr><td id='variant.NoMatch'><code>NoMatch</code></td><td><div class='docblock'><p>The given argv parsed successfully, but it did not match any example
+</div><span id='variant.NoMatch' class='variant'><code>NoMatch</code></span><div class='docblock'><p>The given argv parsed successfully, but it did not match any example
 usage of the program.</p>
 
 <p>Regrettably, there is no descriptive message describing <em>why</em> the
 given argv didn&#39;t match any of the usage strings.</p>
-</div></td><td></td></tr><tr><td id='variant.Decode'><code>Decode</code></td><td><div class='docblock'><p>This indicates a problem decoding a successful argv match into a
+</div><span id='variant.Decode' class='variant'><code>Decode(<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>)</code></span><div class='docblock'><p>This indicates a problem decoding a successful argv match into a
 decodable value.</p>
-</div></td><td></td></tr><tr><td id='variant.WithProgramUsage'><code>WithProgramUsage</code></td><td><div class='docblock'><p>Parsing failed, and the program usage should be printed next to the
+</div><span id='variant.WithProgramUsage' class='variant'><code>WithProgramUsage(<a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a>&gt;,&nbsp;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>)</code></span><div class='docblock'><p>Parsing failed, and the program usage should be printed next to the
 failure message. Typically this wraps <code>Argv</code> and <code>NoMatch</code> errors.</p>
-</div></td><td></td></tr><tr><td id='variant.Help'><code>Help</code></td><td><div class='docblock'><p>Decoding or parsing failed because the command line specified that the
+</div><span id='variant.Help' class='variant'><code>Help</code></span><div class='docblock'><p>Decoding or parsing failed because the command line specified that the
 help message should be printed.</p>
-</div></td><td></td></tr><tr><td id='variant.Version'><code>Version</code></td><td><div class='docblock'><p>Decoding or parsing failed because the command line specified that the
+</div><span id='variant.Version' class='variant'><code>Version(<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>)</code></span><div class='docblock'><p>Decoding or parsing failed because the command line specified that the
 version should be printed</p>
 
 <p>The version is included as a payload to this variant.</p>
-</div></td><td></td></tr></table><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a></code></h3><div class='impl-items'><h4 id='method.fatal' class='method'><code>fn <a href='#method.fatal' class='fnname'>fatal</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-52' class='srclink' href='../src/docopt/dopt.rs.html#86-115' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fatal' class='method'><code>fn <a href='#method.fatal' class='fnname'>fatal</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
 <div class='docblock'><p>Return whether this was a fatal error or not.</p>
 
 <p>Non-fatal errors include requests to print the help or version
@@ -120,11 +122,18 @@ failing to decode or parse.</p>
 error is printed to stdout and the exit status will be <code>0</code>. Otherwise,
 when the error is fatal, the error is printed to stderr and the
 exit status will be <code>1</code>.</p>
-</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html' title='core::fmt::Display'>Display</a> for <a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html#method.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
-</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>StdError</a> for <a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a></code></h3><div class='impl-items'><h4 id='method.description' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html#method.description' class='fnname'>description</a>(&amp;self) -&gt; &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a></code></h4>
-<h4 id='method.cause' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html#method.cause' class='fnname'>cause</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;<a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>StdError</a>&gt;</code></h4>
-</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a></code></h3><div class='impl-items'><h4 id='method.fmt-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
-</div></section>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-21' class='srclink' href='../src/docopt/dopt.rs.html#42' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+<div class='docblock'><p>Formats the value using the given formatter.</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html' title='core::fmt::Display'>Display</a> for <a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-65' class='srclink' href='../src/docopt/dopt.rs.html#117-135' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+<div class='docblock'><p>Formats the value using the given formatter.</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>StdError</a> for <a class='enum' href='../docopt/enum.Error.html' title='docopt::Error'>Error</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-87' class='srclink' href='../src/docopt/dopt.rs.html#137-156' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.description' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html#tymethod.description' class='fnname'>description</a>(&amp;self) -&gt; &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a></code></h4>
+<div class='docblock'><p>A short description of the error. <a href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html#tymethod.description">Read more</a></p>
+</div><h4 id='method.cause' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html#method.cause' class='fnname'>cause</a>(&amp;self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;<a class='trait' href='https://doc.rust-lang.org/nightly/std/error/trait.Error.html' title='std::error::Error'>StdError</a>&gt;</code></h4>
+<div class='docblock'><p>The lower-level cause of this error, if any. <a href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html#method.cause">Read more</a></p>
+</div></div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -147,6 +156,8 @@ exit status will be <code>1</code>.</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

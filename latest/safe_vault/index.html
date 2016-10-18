@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../main.css">
+    
 
     <link rel="shortcut icon" href="http://maidsafe.net/img/favicon.ico">
     
@@ -43,36 +44,206 @@
 
     <section id='main' class="content mod">
 <h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>safe_vault</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-0' class='srclink' href='../src/safe_vault/src/lib.rs.html#18-77' title='goto source code'>[src]</a></span></h1>
-<div class='docblock'><p>Vault provides the library interface to SAFE routing.</p>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-0' class='srclink' href='../src/safe_vault/src/lib.rs.html#18-257' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Implementation of the &quot;Vault&quot; node for the SAFE Network.</p>
 
-<h1 id='diagrams' class='section-header'><a href='#diagrams'>Diagrams</a></h1>
+<h1 id='general' class='section-header'><a href='#general'>General</a></h1>
+<p>Vaults form an overlay network on top of a <a href="http://docs.maidsafe.net/routing/master/routing/index.html" title="Documentation for Routing">Kademlia-like routing network</a> to provide
+decentralised, autonomous, cloud storage.</p>
+
+<p>Clients can connect to this network and make requests to store, retrieve, mutate or delete data.
+Currently the network handles two types of data chunks: <a href="http://docs.maidsafe.net/routing/master/routing/struct.ImmutableData.html" title="Documentation for `ImmutableData`"><code>ImmutableData</code></a> and
+<a href="http://docs.maidsafe.net/routing/master/routing/struct.StructuredData.html" title="Documentation for `StructuredData`"><code>StructuredData</code></a>.</p>
+
+<p>The underlying routing network provides the ability to send and receive messages from peers
+or groups of &quot;close&quot; peers.  These singletons or groups are referred to as authorities.  See the
+general <a href="http://docs.maidsafe.net/routing/master/routing/index.html" title="Documentation for Routing">routing docs</a> and the <a href="http://docs.maidsafe.net/routing/master/routing/enum.Authority.html" title="Documentation for `Authority`"><code>Authority</code> docs</a> for further details.</p>
+
+<p>Vaults have two main sets of responsibilities, each set being associated with a &quot;persona&quot; of the
+Vault; managing Client accounts and managing data stored on the network.  Among other things, it
+involves passing responsibility to new Vaults when there is local churn (i.e. a Vault joins or
+leaves nearby).</p>
+
+<h1 id='client-manager-persona' class='section-header'><a href='#client-manager-persona'>Client Manager Persona</a></h1>
+<p>The Client Manager persona (a.k.a. <code>MaidManager</code>) holds an account for each Client which is
+close to it in the network address space.  Each such account is managed by a group of
+<a href="http://docs.maidsafe.net/routing/master/routing/constant.GROUP_SIZE.html" title="Documentation for `GROUP_SIZE`"><code>GROUP_SIZE</code></a> Vaults.</p>
+
+<p>A Client&#39;s account contains details of how many chunks of data have been put to the network by
+that Client and how many new chunks can still be put.  If a Client&#39;s account indicates that no
+more chunks can be put to the network, the Client Managers for that Client disallow any further
+<code>Put</code> requests, responding with a <code>LowBalance</code> error.</p>
+
+<p>Clients can retrieve their account balances by sending a specific request to their Managers,
+namely a <code>GetAccountInfo</code> request.</p>
+
+<h3 id='churn' class='section-header'><a href='#churn'>Churn</a></h3>
+<p>When a Vault joins the network nearby, the Client Manager will remove all accounts for which it
+is no longer responsible and will send the remainder to the close group for each account.
+These are termed &quot;refresh&quot; messages; they allow all members of each group to synchronise their
+account information.</p>
+
+<p>When a close Vault leaves the network, the Client Manager simply sends a set of refreshes.  It
+will thus be given any accounts which it was not previously managing, but for which it is now
+responsible.</p>
+
+<h1 id='data-manager-persona' class='section-header'><a href='#data-manager-persona'>Data Manager Persona</a></h1>
+<p>The Data Manager persona holds a chunk store where data chunks are held and is responsible for
+chunks whose names are close to it in the network address space.  Not every Data Manager in a
+given group close to a chunk will necessarily hold that chunk, but every one should be aware of
+which peers <em>do</em> hold it.</p>
+
+<h3 id='chunk-cache' class='section-header'><a href='#chunk-cache'>Chunk Cache</a></h3>
+<p>The Data Manager also holds a cache of chunks for which it is not directly responsible.  These
+are chunks for which the Vault was recently responsible but has churned out of the close group,
+or chunks which have recently been requested by a Client.</p>
+
+<p>The purpose for caching the former is that there is a reasonable chance that the Vault will soon
+become responsible for that chunk again due to churn.  This saves the chunk from having to be
+retrieved via new Get requests.</p>
+
+<p>The rationale for the latter is that popular chunks will receive many Get requests by many
+different Clients and the work of satisfying these requests needs to be spread across more
+Vaults than normal.  By opportunistically caching chunks which have been retrieved by Clients,
+popular chunks will end up being cached by many more Vaults than the close group, hence the
+close group will be protected from excessive numbers of Get requests.</p>
+
+<h3 id='churn-1' class='section-header'><a href='#churn-1'>Churn</a></h3>
+<p>In a similar way to the Client Manager, the Data Manager will clear out records and send refresh
+messages.  In addition, it will also try to retrieve any chunks for which it is responsible from
+any close peer which is not currently busy, i.e. a peer which is not currently being asked for a
+chunk by this Vault.  Chunk replication to this Vault continues repeatedly until it holds all
+chunks for which it is responsible.</p>
+
+<h1 id='message-flows' class='section-header'><a href='#message-flows'>Message Flows</a></h1>
+<p>As mentioned above, two chunk types are handled by Vaults: <code>ImmutableData</code> and <code>StructuredData</code>.
+Both types can be stored to the network by using <code>Put</code> messages and retrieved from the network
+by using <code>Get</code> messages.  <code>StructuredData</code> can also be mutated by using <code>Post</code> messages or
+removed by using <code>Delete</code> messages.</p>
+
+<p>The following sections give an overview of the end-to-end process involved in each of these
+operations.</p>
+
+<h2 id='put-immutabledata' class='section-header'><a href='#put-immutabledata'><code>Put ImmutableData</code></a></h2>
+<ol>
+<li>Client sends <code>Put</code> to its <code>MaidManager</code> group</li>
+<li><code>MaidManager</code> responds with failure (ending the message flow) if:
+
 <ul>
-<li><a href="personas.png">Personas</a></li>
-<li><a href="immutable-data-put-flow.png">Immutable data put flow</a></li>
-<li><a href="immutable-data-get-flow.png">Immutable data get flow</a></li>
-</ul>
+<li>Client doesn&#39;t have an account</li>
+<li>Client&#39;s account has insufficient balance to be allowed to store a new chunk</li>
+</ul></li>
+<li><code>MaidManager</code> sends <code>Put</code> to <code>DataManager</code> group for the chunk</li>
+<li>if <code>DataManager</code> already has a copy of the chunk, it responds with success to <code>MaidManager</code>
+group.  Otherwise, it:
+
+<ul>
+<li>responds with failure (<code>NetworkFull</code> error) to <code>MaidManager</code> group if its chunkstore is
+full</li>
+<li>tries to store the chunk and responds with appropriate success or failure to <code>MaidManager</code>
+group</li>
+<li>if the store attempt was successful, sends <code>Refresh</code> to its fellow <code>DataManager</code>s</li>
+</ul></li>
+<li><code>MaidManager</code> then:
+
+<ul>
+<li>refunds the Client&#39;s account if the <code>DataManager</code> group reports failure</li>
+<li>sends <code>Refresh</code> to its fellow <code>MaidManager</code>s</li>
+<li>responds with appropriate success or failure to Client</li>
+</ul></li>
+</ol>
+
+<h2 id='put-structureddata' class='section-header'><a href='#put-structureddata'><code>Put StructuredData</code></a></h2>
+<ol>
+<li>Client sends <code>Put</code> to its <code>MaidManager</code> group</li>
+<li>if the type tag of the chunk is <code>0</code>, (representing an account creation request) <code>MaidManager</code>
+responds with failure (ending the message flow) if this account already exists</li>
+<li>if the type tag of the chunk is not <code>0</code>, <code>MaidManager</code> responds with failure (ending the
+message flow) if:
+
+<ul>
+<li>Client doesn&#39;t have an account</li>
+<li>Client&#39;s account has insufficient balance to be allowed to store a new chunk</li>
+</ul></li>
+<li><code>MaidManager</code> sends <code>Put</code> to <code>DataManager</code> group for the chunk</li>
+<li>if <code>DataManager</code> already has a copy of the chunk, it responds with failure to <code>MaidManager</code>
+group.  Otherwise, it:
+
+<ul>
+<li>responds with failure (&quot;network full&quot; error) to <code>MaidManager</code> group if its chunkstore is
+full</li>
+<li>tries to store the chunk and responds with appropriate success or failure to <code>MaidManager</code>
+group</li>
+<li>if the store attempt was successful, sends <code>Refresh</code> to its fellow <code>DataManager</code>s</li>
+</ul></li>
+<li><code>MaidManager</code> then:
+
+<ul>
+<li>refunds the Client&#39;s account if the <code>DataManager</code> group reports failure</li>
+<li>sends <code>Refresh</code> to its fellow <code>MaidManager</code>s</li>
+<li>responds with appropriate success or failure to Client</li>
+</ul></li>
+</ol>
+
+<h2 id='get-immutabledata-or-get-structureddata' class='section-header'><a href='#get-immutabledata-or-get-structureddata'><code>Get ImmutableData</code> or <code>Get StructuredData</code></a></h2>
+<ol>
+<li>Client sends <code>Get</code> to the <code>DataManager</code> group for the chunk</li>
+<li><code>DataManager</code> responds with appropriate success or failure to Client depending on whether or
+not it can retrieve the requested chunk from its chunkstore</li>
+</ol>
+
+<h2 id='post-structureddata' class='section-header'><a href='#post-structureddata'><code>Post StructuredData</code></a></h2>
+<ol>
+<li>Client sends <code>Post</code> to the <code>DataManager</code> group for the chunk</li>
+<li><code>DataManager</code> responds with failure (ending the message flow) to the Client if:
+
+<ul>
+<li>there isn&#39;t an existing <code>StructuredData</code> chunk with the same name</li>
+<li>the new chunk isn&#39;t a valid successor of the existing one</li>
+<li>the chunkstore can&#39;t store the new chunk</li>
+</ul></li>
+<li>if storing the chunk succeeds, <code>DataManager</code>:
+
+<ul>
+<li>responds with success to the Client</li>
+<li>sends <code>Refresh</code> to its fellow <code>DataManager</code>s</li>
+</ul></li>
+</ol>
+
+<h2 id='delete-structureddata' class='section-header'><a href='#delete-structureddata'><code>Delete StructuredData</code></a></h2>
+<p>Note that deleting involves sending a new version of the chunk to be deleted in order to allow
+validation of the request.</p>
+
+<ol>
+<li>Client sends <code>Delete</code> to the <code>DataManager</code> group for the chunk</li>
+<li><code>DataManager</code> responds with failure (ending the message flow) to the Client if:
+
+<ul>
+<li>there isn&#39;t an existing <code>StructuredData</code> chunk with the same name</li>
+<li>the new chunk isn&#39;t a valid successor of the existing one</li>
+<li>the chunkstore can&#39;t delete the existing chunk</li>
+</ul></li>
+<li>if deleting the chunk succeeds, <code>DataManager</code> responds with success to the Client</li>
+</ol>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.Config.html'
-                               title='safe_vault::Config'>Config</a></td>
-                        <td class='docblock short'>
-                             <p>Lets a vault configure a wallet address and storage limit.</p>
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.Vault.html'
-                               title='safe_vault::Vault'>Vault</a></td>
-                        <td class='docblock short'>
-                             <p>Main struct to hold all personas and Routing instance</p>
-                        </td>
-                    </tr>
-                </table></section>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Config.html'
+                                  title='safe_vault::Config'>Config</a></td>
+                           <td class='docblock short'>
+                                <p>Lets a vault configure a wallet address and storage limit.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Vault.html'
+                                  title='safe_vault::Vault'>Vault</a></td>
+                           <td class='docblock short'>
+                                <p>Main struct to hold all personas and Routing instance</p>
+                           </td>
+                       </tr></table></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -95,6 +266,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

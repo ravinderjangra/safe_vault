@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-88ac128001ac3a9a/crossbeam-0.2.9/src/mem/epoch/mod.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/crossbeam-0.2.10/src/mem/epoch/mod.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>mod.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../../main.css">
+    
 
     
     
@@ -304,6 +305,8 @@
 <span id="261">261</span>
 <span id="262">262</span>
 <span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Epoch-based memory management</span>
 <span class='doccomment'>//!</span>
@@ -449,6 +452,7 @@
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>;
 
 <span class='doccomment'>/// Like `Box&lt;T&gt;`: an owned, heap-allocated data value of type `T`.</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Owned</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
     <span class='ident'>data</span>: <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>,
 }
@@ -484,6 +488,7 @@
 
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>PartialEq</span>, <span class='ident'>Eq</span>)]</span>
 <span class='doccomment'>/// Like `&amp;&#39;a T`: a shared reference valid for lifetime `&#39;a`.</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Shared</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
     <span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>T</span>,
 }
@@ -531,7 +536,7 @@
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>test</span> {
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::<span class='ident'>Ordering</span>;
-    <span class='kw'>use</span> <span class='ident'>super</span>::<span class='op'>*</span>;
+    <span class='kw'>use</span> <span class='kw'>super</span>::<span class='op'>*</span>;
     <span class='kw'>use</span> <span class='ident'>mem</span>::<span class='ident'>epoch</span>;
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
@@ -592,6 +597,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-88ac128001ac3a9a/crossbeam-0.2.9/src/mem/epoch/guard.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/crossbeam-0.2.10/src/mem/epoch/guard.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>guard.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../../main.css">
+    
 
     
     
@@ -96,16 +97,18 @@
 <span id="53">53</span>
 <span id="54">54</span>
 <span id="55">55</span>
+<span id="56">56</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>marker</span>;
 
-<span class='kw'>use</span> <span class='ident'>super</span>::{<span class='ident'>local</span>, <span class='ident'>Shared</span>};
+<span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>local</span>, <span class='ident'>Shared</span>};
 
 <span class='doccomment'>/// An RAII-style guard for pinning the current epoch.</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// A guard must be acquired before most operations on an `Atomic` pointer. On</span>
 <span class='doccomment'>/// destruction, it unpins the epoch.</span>
 <span class='attribute'>#[<span class='ident'>must_use</span>]</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Guard</span> {
     <span class='ident'>_marker</span>: <span class='ident'>marker</span>::<span class='ident'>PhantomData</span><span class='op'>&lt;</span><span class='op'>*</span><span class='kw-2'>mut</span> ()<span class='op'>&gt;</span>, <span class='comment'>// !Send and !Sync</span>
 }
@@ -176,6 +179,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

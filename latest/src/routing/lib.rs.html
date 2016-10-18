@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-88ac128001ac3a9a/routing-0.18.3/src/lib.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/routing-0.27.1/src/lib.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>lib.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     <link rel="shortcut icon" href="http://maidsafe.net/img/favicon.ico">
     
@@ -251,16 +252,6 @@
 <span id="208">208</span>
 <span id="209">209</span>
 <span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -300,11 +291,10 @@
 <span class='doccomment'>//! will be a member of, and without a majority in the group it cannot forge a message from that</span>
 <span class='doccomment'>//! group.</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! The library also provides different types for the messages&#39; data. The data types are encoded</span>
-<span class='doccomment'>//! with Concise Binary Object Representation (CBOR).</span>
+<span class='doccomment'>//! The library also provides different types for the messages&#39; data.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! ## Usage</span>
+<span class='doccomment'>//! # Usage</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! A decentralised service based on the `routing` library uses `Client` to send requests to the</span>
 <span class='doccomment'>//! network of nodes and receive responses.</span>
@@ -313,7 +303,7 @@
 <span class='doccomment'>//! functionality, e. g. storing and retrieving data, validating permissions, managing metadata etc.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! # Client creation</span>
+<span class='doccomment'>//! ## Client creation</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! A client&#39;s name is a hash of its public keys. Upon creation, the client will attempt to connect</span>
 <span class='doccomment'>//! to the network through any node, and exchange public keys with it. That node becomes a</span>
@@ -325,7 +315,7 @@
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! let (sender, _receiver) = mpsc::channel::&lt;Event&gt;();</span>
 <span class='doccomment'>//! let full_id = FullId::new(); // Generate new keys.</span>
-<span class='doccomment'>//! let _ = Client::new(sender, Some(full_id.clone()), true).unwrap();</span>
+<span class='doccomment'>//! let _ = Client::new(sender, Some(full_id.clone())).unwrap();</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! let _ = full_id.public_id().name();</span>
 <span class='doccomment'>//! ```</span>
@@ -334,7 +324,7 @@
 <span class='doccomment'>//! `receiver`.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! # Node creation</span>
+<span class='doccomment'>//! ## Node creation</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! Creating a node looks even simpler:</span>
 <span class='doccomment'>//!</span>
@@ -343,7 +333,7 @@
 <span class='doccomment'>//! use routing::{Node, Event};</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! let (sender, _receiver) = mpsc::channel::&lt;Event&gt;();</span>
-<span class='doccomment'>//! let _ = Node::new(sender, true).unwrap();</span>
+<span class='doccomment'>//! let _ = Node::builder().create(sender).unwrap();</span>
 <span class='doccomment'>//! ```</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! Upon creation, the node will first connect to the network as a client. Once it has client</span>
@@ -356,47 +346,12 @@
 <span class='doccomment'>//! same message.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! # Example: Put message flow for immutable data</span>
+<span class='doccomment'>//! # Sequence diagrams</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! An example implementation of a vault for storing and retrieving `ImmutableData` is included</span>
-<span class='doccomment'>//! with the code of this library. The flow of a `Put` request there moves through the following</span>
-<span class='doccomment'>//! authorities:</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! * A `Client` that wants to store a piece of data on the network.</span>
-<span class='doccomment'>//! * The `ClientManager` group authority that is responsible for that particular client. The nodes</span>
-<span class='doccomment'>//! in this group have access to metadata about this client and can e. g. verify that it has</span>
-<span class='doccomment'>//! required permissions or quota to store the data. The `ClientManager`&#39;s address is the `XorName`</span>
-<span class='doccomment'>//! of the client itself, so it consists of the nodes closest to that name.</span>
-<span class='doccomment'>//! * The `NaeManager` group authority which is responsible for that particular piece of data and</span>
-<span class='doccomment'>//! knows where in the network it should be stored. Its address is the `XorName` of the data.</span>
-<span class='doccomment'>//! * The `ManagedNode`s are the individual nodes that actually store the data. This could be just</span>
-<span class='doccomment'>//! one, but let&#39;s assume that data is stored redundantly in more than one place.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! The message flow from the client to the managed nodes looks like this:</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! * The client sends a `Put` request to the `ClientManager`, i. e. the sender is the individual</span>
-<span class='doccomment'>//! `Client` and the receiver is a group of nodes with addresses close to the client&#39;s name.</span>
-<span class='doccomment'>//! * Each node in the `ClientManager` group performs validation and updates metadata (which may</span>
-<span class='doccomment'>//! involve further messages not considered in this example). If valid, it sends a `PutSuccess`</span>
-<span class='doccomment'>//! response back to the client, and a `Put` request to the `NaeManager` with the data&#39;s `XorName`.</span>
-<span class='doccomment'>//! In both cases, the sender is the `ClientManager`, not the individual node.</span>
-<span class='doccomment'>//! * Each node in the `NaeManager` chooses a number of individual nodes that are responsible for</span>
-<span class='doccomment'>//! storing this specific piece of data. This needs to happen in a deterministic way so that the</span>
-<span class='doccomment'>//! members of the `NaeManager` agree on the responsible nodes. Then they finally send a `Put`</span>
-<span class='doccomment'>//! request to each of these. Here the sender is the `NaeManager`, but the recipient is the</span>
-<span class='doccomment'>//! individual `ManagedNode`.</span>
-<span class='doccomment'>//! * Each `ManagedNode` locally stores the data.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! These steps need to be implemented by the user of the library. Each node needs to handle all</span>
-<span class='doccomment'>//! these cases, as it can be simultaneously a `ManagedNode` and a member of several different</span>
-<span class='doccomment'>//! `ClientManager`s and `NaeManager`s. A client, however, does not act as a node or vice versa.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! Transparently to the user, the `routing` library deals with message quora, so the user will only</span>
-<span class='doccomment'>//! receive a message from a `Client` or `Node` if it was either sent</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! * by a client or individual node, or</span>
-<span class='doccomment'>//! * by a sufficient number of members of a group authority.</span>
-<span class='doccomment'>//!</span>
+<span class='doccomment'>//! - [Bootstrapping](bootstrap.png)</span>
+<span class='doccomment'>//! - [`GetCloseGroup`](get-close-group.png)</span>
+<span class='doccomment'>//! - [Churn (`NewNode`)](new-node.png)</span>
+<span class='doccomment'>//! - [Tunnel](tunnel.png)</span>
 
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>doc</span>(<span class='ident'>html_logo_url</span> <span class='op'>=</span>
            <span class='string'>&quot;https://raw.githubusercontent.com/maidsafe/QA/master/Images/maidsafe_logo.png&quot;</span>,
@@ -407,7 +362,7 @@
 <span class='comment'>// https://github.com/maidsafe/QA/blob/master/Documentation/Rust%20Lint%20Checks.md</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>forbid</span>(<span class='ident'>bad_style</span>, <span class='ident'>exceeding_bitshifts</span>, <span class='ident'>mutable_transmutes</span>, <span class='ident'>no_mangle_const_items</span>,
           <span class='ident'>unknown_crate_types</span>, <span class='ident'>warnings</span>)]</span>
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>deny</span>(<span class='ident'>deprecated</span>, <span class='ident'>drop_with_repr_extern</span>, <span class='ident'>improper_ctypes</span>, <span class='ident'>missing_docs</span>,
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>deny</span>(<span class='ident'>deprecated</span>, <span class='ident'>improper_ctypes</span>, <span class='ident'>missing_docs</span>,
         <span class='ident'>non_shorthand_field_patterns</span>, <span class='ident'>overflowing_literals</span>, <span class='ident'>plugin_as_library</span>,
         <span class='ident'>private_no_mangle_fns</span>, <span class='ident'>private_no_mangle_statics</span>, <span class='ident'>stable_features</span>, <span class='ident'>unconditional_recursion</span>,
         <span class='ident'>unknown_lints</span>, <span class='ident'>unsafe_code</span>, <span class='ident'>unused</span>, <span class='ident'>unused_allocation</span>, <span class='ident'>unused_attributes</span>,
@@ -427,61 +382,87 @@
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>log</span>;
 <span class='attribute'>#[<span class='ident'>macro_use</span>]</span>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>maidsafe_utilities</span>;
+<span class='attribute'>#[<span class='ident'>macro_use</span>]</span>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>unwrap</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>accumulator</span>;
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>crust</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>itertools</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>lru_time_cache</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>kademlia_routing_table</span>;
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>message_filter</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rand</span>;
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rust_sodium</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rustc_serialize</span>;
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>sodiumoxide</span>;
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>xor_name</span>;
 
 <span class='kw'>mod</span> <span class='ident'>action</span>;
 <span class='kw'>mod</span> <span class='ident'>authority</span>;
 <span class='kw'>mod</span> <span class='ident'>client</span>;
 
+<span class='kw'>mod</span> <span class='ident'>cache</span>;
 <span class='kw'>mod</span> <span class='ident'>core</span>;
 <span class='kw'>mod</span> <span class='ident'>data</span>;
 <span class='kw'>mod</span> <span class='ident'>error</span>;
 <span class='kw'>mod</span> <span class='ident'>event</span>;
 <span class='kw'>mod</span> <span class='ident'>id</span>;
 <span class='kw'>mod</span> <span class='ident'>immutable_data</span>;
+<span class='kw'>mod</span> <span class='ident'>message_filter</span>;
 <span class='kw'>mod</span> <span class='ident'>messages</span>;
 <span class='kw'>mod</span> <span class='ident'>node</span>;
+<span class='kw'>mod</span> <span class='ident'>peer_manager</span>;
 <span class='kw'>mod</span> <span class='ident'>plain_data</span>;
+<span class='kw'>mod</span> <span class='ident'>append_types</span>;
+<span class='kw'>mod</span> <span class='ident'>priv_appendable_data</span>;
+<span class='kw'>mod</span> <span class='ident'>pub_appendable_data</span>;
 <span class='kw'>mod</span> <span class='ident'>stats</span>;
 <span class='kw'>mod</span> <span class='ident'>structured_data</span>;
 <span class='kw'>mod</span> <span class='ident'>timer</span>;
 <span class='kw'>mod</span> <span class='ident'>tunnels</span>;
 <span class='kw'>mod</span> <span class='ident'>types</span>;
 <span class='kw'>mod</span> <span class='ident'>utils</span>;
+<span class='kw'>mod</span> <span class='ident'>xor_name</span>;
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>test</span>, <span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>))]</span>
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
+<span class='attribute'>#[<span class='ident'>allow</span>(<span class='ident'>unused</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>core_tests</span>;
 
 <span class='doccomment'>/// Mock crust</span>
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>mock_crust</span>;
 
+<span class='doccomment'>/// Messaging infrastructure</span>
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>messaging</span>;
+<span class='doccomment'>/// Error communication between vaults and core</span>
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>client_errors</span>;
+
+<span class='doccomment'>/// Structured Data Tag for Session Packet Type</span>
+<span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>TYPE_TAG_SESSION_PACKET</span>: <span class='ident'>u64</span> <span class='op'>=</span> <span class='number'>0</span>;
+<span class='doccomment'>/// Structured Data Tag for DNS Packet Type</span>
+<span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>TYPE_TAG_DNS_PACKET</span>: <span class='ident'>u64</span> <span class='op'>=</span> <span class='number'>5</span>;
+
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>mock_crust</span>::<span class='ident'>crust</span>;
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>core_tests</span>::<span class='ident'>verify_kademlia_invariant</span>;
+
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>authority</span>::<span class='ident'>Authority</span>;
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>core</span>::<span class='ident'>NodeInfo</span>;
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>cache</span>::<span class='ident'>Cache</span>;
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>client</span>::<span class='ident'>Client</span>;
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>data</span>::{<span class='ident'>Data</span>, <span class='ident'>DataIdentifier</span>};
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>core</span>::{<span class='ident'>GROUP_SIZE</span>, <span class='ident'>QUORUM_SIZE</span>};
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>data</span>::{<span class='ident'>Data</span>, <span class='ident'>DataIdentifier</span>, <span class='ident'>NO_OWNER_PUB_KEY</span>};
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>error</span>::{<span class='ident'>InterfaceError</span>, <span class='ident'>RoutingError</span>};
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>event</span>::<span class='ident'>Event</span>;
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>id</span>::{<span class='ident'>FullId</span>, <span class='ident'>PublicId</span>};
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>immutable_data</span>::{<span class='ident'>ImmutableData</span>, <span class='ident'>ImmutableDataBackup</span>, <span class='ident'>ImmutableDataSacrificial</span>,
-                         <span class='ident'>normal_to_backup</span>, <span class='ident'>backup_to_normal</span>, <span class='ident'>normal_to_sacrificial</span>,
-                         <span class='ident'>sacrificial_to_normal</span>, <span class='ident'>backup_to_sacrificial</span>, <span class='ident'>sacrificial_to_backup</span>};
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>messages</span>::{<span class='ident'>RequestContent</span>, <span class='ident'>RequestMessage</span>, <span class='ident'>ResponseContent</span>, <span class='ident'>ResponseMessage</span>,
-                   <span class='ident'>RoutingMessage</span>, <span class='ident'>SignedMessage</span>};
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>node</span>::<span class='ident'>Node</span>;
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>immutable_data</span>::{<span class='ident'>MAX_IMMUTABLE_DATA_SIZE_IN_BYTES</span>, <span class='ident'>ImmutableData</span>};
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>messages</span>::{<span class='ident'>Request</span>, <span class='ident'>Response</span>};
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>node</span>::{<span class='ident'>Node</span>, <span class='ident'>NodeBuilder</span>};
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>plain_data</span>::<span class='ident'>PlainData</span>;
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>append_types</span>::{<span class='ident'>AppendedData</span>, <span class='ident'>AppendWrapper</span>, <span class='ident'>Filter</span>};
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>pub_appendable_data</span>::{<span class='ident'>MAX_PUB_APPENDABLE_DATA_SIZE_IN_BYTES</span>, <span class='ident'>PubAppendableData</span>};
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>priv_appendable_data</span>::{<span class='ident'>MAX_PRIV_APPENDABLE_DATA_SIZE_IN_BYTES</span>, <span class='ident'>PrivAppendableData</span>,
+                               <span class='ident'>PrivAppendedData</span>};
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>structured_data</span>::{<span class='ident'>MAX_STRUCTURED_DATA_SIZE_IN_BYTES</span>, <span class='ident'>StructuredData</span>};
 <span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>types</span>::<span class='ident'>MessageId</span>;
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>xor_name</span>::{<span class='ident'>XorName</span>, <span class='ident'>XorNameFromHexError</span>, <span class='ident'>XOR_NAME_LEN</span>, <span class='ident'>XOR_NAME_BITS</span>};
 </pre>
 </section>
     <section id='search' class="content hidden"></section>
@@ -506,6 +487,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 

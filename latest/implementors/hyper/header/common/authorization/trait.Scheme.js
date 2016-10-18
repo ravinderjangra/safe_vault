@@ -1,5 +1,5 @@
 (function() {var implementors = {};
-implementors['igd'] = [];
+implementors["igd"] = [];
 
             if (window.register_implementors) {
                 window.register_implementors(implementors);

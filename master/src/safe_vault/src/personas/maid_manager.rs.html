@@ -456,9 +456,6 @@
 <span id="412">412</span>
 <span id="413">413</span>
 <span id="414">414</span>
-<span id="415">415</span>
-<span id="416">416</span>
-<span id="417">417</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -631,10 +628,7 @@
                         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Ok</span>(<span class='ident'>serialised_refresh</span>) <span class='op'>=</span> <span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>refresh</span>) {
                             <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;MM sending delete refresh for account {}&quot;</span>, <span class='ident'>src</span>.<span class='ident'>name</span>());
                             <span class='kw'>let</span> _ <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>routing_node</span>
-                                .<span class='ident'>send_refresh_request</span>(<span class='ident'>dst</span>.<span class='ident'>clone</span>(),
-                                                      <span class='ident'>dst</span>.<span class='ident'>clone</span>(),
-                                                      <span class='ident'>serialised_refresh</span>,
-                                                      <span class='ident'>msg_id</span>);
+                                .<span class='ident'>send_refresh_request</span>(<span class='ident'>dst</span>, <span class='ident'>dst</span>, <span class='ident'>serialised_refresh</span>, <span class='ident'>msg_id</span>);
                         }
                         <span class='ident'>MutationError</span>::<span class='ident'>AccountExists</span>
                     }
@@ -736,7 +730,7 @@
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Ok</span>(<span class='ident'>serialised_refresh</span>) <span class='op'>=</span> <span class='ident'>serialisation</span>::<span class='ident'>serialise</span>(<span class='kw-2'>&amp;</span><span class='ident'>refresh</span>) {
             <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;MM sending refresh for account {}&quot;</span>, <span class='ident'>src</span>.<span class='ident'>name</span>());
             <span class='kw'>let</span> _ <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>routing_node</span>
-                .<span class='ident'>send_refresh_request</span>(<span class='ident'>src</span>.<span class='ident'>clone</span>(), <span class='ident'>src</span>.<span class='ident'>clone</span>(), <span class='ident'>serialised_refresh</span>, <span class='ident'>msg_id</span>);
+                .<span class='ident'>send_refresh_request</span>(<span class='ident'>src</span>, <span class='ident'>src</span>, <span class='ident'>serialised_refresh</span>, <span class='ident'>msg_id</span>);
         }
     }
 
@@ -802,7 +796,7 @@
         }
         {
             <span class='comment'>// forwarding data_request to NAE Manager</span>
-            <span class='kw'>let</span> <span class='ident'>src</span> <span class='op'>=</span> <span class='ident'>dst</span>.<span class='ident'>clone</span>();
+            <span class='kw'>let</span> <span class='ident'>src</span> <span class='op'>=</span> <span class='ident'>dst</span>;
             <span class='kw'>let</span> <span class='ident'>dst</span> <span class='op'>=</span> <span class='ident'>Authority</span>::<span class='ident'>NaeManager</span>(<span class='op'>*</span><span class='ident'>data</span>.<span class='ident'>name</span>());
             <span class='macro'>trace</span><span class='macro'>!</span>(<span class='string'>&quot;MM forwarding put request to {:?}&quot;</span>, <span class='ident'>dst</span>);
             <span class='kw'>let</span> _ <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>send_put_request</span>(<span class='ident'>src</span>, <span class='ident'>dst</span>, <span class='ident'>data</span>, <span class='ident'>msg_id</span>);

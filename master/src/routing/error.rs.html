@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/routing-0.27.1/src/error.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/git/checkouts/routing-616e72cf40f12bc0/stable/src/error.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>error.rs.html -- source</title>
@@ -199,6 +199,7 @@
 <span id="155">155</span>
 <span id="156">156</span>
 <span id="157">157</span>
+<span id="158">158</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -207,7 +208,7 @@
 <span class='comment'>// licence you accepted on initial access to the Software (the &quot;Licences&quot;).</span>
 <span class='comment'>//</span>
 <span class='comment'>// By contributing code to the SAFE Network Software, or to this project generally, you agree to be</span>
-<span class='comment'>// bound by the terms of the MaidSafe Contributor Agreement, version 1.0.  This, along with the</span>
+<span class='comment'>// bound by the terms of the MaidSafe Contributor Agreement, version 1.1.  This, along with the</span>
 <span class='comment'>// Licenses can be found in the root directory of this project at LICENSE, COPYING and CONTRIBUTOR.</span>
 <span class='comment'>//</span>
 <span class='comment'>// Unless required by applicable law or agreed to in writing, the SAFE Network Software distributed</span>
@@ -223,8 +224,9 @@
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;use-mock-crust&quot;</span>)]</span>
 <span class='kw'>use</span> <span class='ident'>mock_crust</span>::<span class='ident'>crust</span>::{<span class='self'>self</span>, <span class='ident'>PeerId</span>};
 <span class='kw'>use</span> <span class='ident'>event</span>::<span class='ident'>Event</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>mpsc</span>::{<span class='ident'>RecvError</span>, <span class='ident'>SendError</span>};
 <span class='kw'>use</span> <span class='ident'>maidsafe_utilities</span>::<span class='ident'>event_sender</span>::{<span class='ident'>EventSenderError</span>, <span class='ident'>MaidSafeEventCategory</span>};
+<span class='kw'>use</span> <span class='ident'>maidsafe_utilities</span>::<span class='ident'>serialisation</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>mpsc</span>::{<span class='ident'>RecvError</span>, <span class='ident'>SendError</span>};
 
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
 <span class='doccomment'>/// The type of errors that can occur if routing is unable to handle a send request.</span>
@@ -299,7 +301,7 @@
     <span class='doccomment'>/// Current state is invalid for the operation</span>
     <span class='ident'>InvalidStateForOperation</span>,
     <span class='doccomment'>/// Serialisation Error</span>
-    <span class='ident'>SerialisationError</span>(::<span class='ident'>maidsafe_utilities</span>::<span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span>),
+    <span class='ident'>SerialisationError</span>(<span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span>),
     <span class='doccomment'>/// Asymmetric Decryption Failure</span>
     <span class='ident'>AsymmetricDecryptionFailure</span>,
     <span class='doccomment'>/// Unknown Connection</span>
@@ -352,8 +354,8 @@
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>From</span><span class='op'>&lt;</span>::<span class='ident'>maidsafe_utilities</span>::<span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>RoutingError</span> {
-    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>error</span>: ::<span class='ident'>maidsafe_utilities</span>::<span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span>) <span class='op'>-&gt;</span> <span class='ident'>RoutingError</span> {
+<span class='kw'>impl</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>RoutingError</span> {
+    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>error</span>: <span class='ident'>serialisation</span>::<span class='ident'>SerialisationError</span>) <span class='op'>-&gt;</span> <span class='ident'>RoutingError</span> {
         <span class='ident'>RoutingError</span>::<span class='ident'>SerialisationError</span>(<span class='ident'>error</span>)
     }
 }

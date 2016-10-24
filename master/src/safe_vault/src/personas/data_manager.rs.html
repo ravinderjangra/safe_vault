@@ -1163,16 +1163,6 @@
 <span id="1119">1119</span>
 <span id="1120">1120</span>
 <span id="1121">1121</span>
-<span id="1122">1122</span>
-<span id="1123">1123</span>
-<span id="1124">1124</span>
-<span id="1125">1125</span>
-<span id="1126">1126</span>
-<span id="1127">1127</span>
-<span id="1128">1128</span>
-<span id="1129">1129</span>
-<span id="1130">1130</span>
-<span id="1131">1131</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2015 MaidSafe.net limited.</span>
 <span class='comment'>//</span>
@@ -1538,8 +1528,7 @@
         <span class='ident'>Data</span>::<span class='ident'>Structured</span>(<span class='kw-2'>ref</span> <span class='ident'>sd</span>) <span class='op'>=&gt;</span> <span class='ident'>sd</span>.<span class='ident'>get_version</span>(),
         <span class='ident'>Data</span>::<span class='ident'>PubAppendable</span>(<span class='kw-2'>ref</span> <span class='ident'>ad</span>) <span class='op'>=&gt;</span> <span class='ident'>ad</span>.<span class='ident'>get_version</span>(),
         <span class='ident'>Data</span>::<span class='ident'>PrivAppendable</span>(<span class='kw-2'>ref</span> <span class='ident'>ad</span>) <span class='op'>=&gt;</span> <span class='ident'>ad</span>.<span class='ident'>get_version</span>(),
-        <span class='ident'>Data</span>::<span class='ident'>Immutable</span>(_) <span class='op'>|</span>
-        <span class='ident'>Data</span>::<span class='ident'>Plain</span>(_) <span class='op'>=&gt;</span> <span class='number'>0</span>,
+        <span class='ident'>Data</span>::<span class='ident'>Immutable</span>(_) <span class='op'>=&gt;</span> <span class='number'>0</span>,
     })
 }
 
@@ -1643,7 +1632,6 @@
                     <span class='kw'>let</span> _ <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>routing_node</span>.<span class='ident'>send_put_success</span>(<span class='ident'>dst</span>, <span class='ident'>src</span>, <span class='ident'>data_id</span>, <span class='ident'>message_id</span>);
                     <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(());
                 }
-                _ <span class='op'>=&gt;</span> <span class='macro'>unimplemented</span><span class='macro'>!</span>(),
             }
         }
 
@@ -1883,7 +1871,6 @@
                     <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(()); <span class='comment'>// Immutable data is already there.</span>
                 }
             }
-            <span class='ident'>DataIdentifier</span>::<span class='ident'>Plain</span>(..) <span class='op'>=&gt;</span> <span class='macro'>unreachable</span><span class='macro'>!</span>(<span class='string'>&quot;Unexpected data type.&quot;</span>),
         }
 
         <span class='self'>self</span>.<span class='ident'>clean_chunk_store</span>();
@@ -1947,10 +1934,6 @@
                             <span class='prelude-val'>Ok</span>(<span class='ident'>Data</span>::<span class='ident'>PrivAppendable</span>(<span class='ident'>ad</span>)) <span class='op'>=&gt;</span> <span class='ident'>ad</span>.<span class='ident'>get_version</span>() <span class='op'>&lt;=</span> <span class='op'>*</span><span class='ident'>version</span>,
                             <span class='prelude-val'>Ok</span>(_) <span class='op'>=&gt;</span> <span class='macro'>unreachable</span><span class='macro'>!</span>(),
                         }
-                    }
-                    _ <span class='op'>=&gt;</span> {
-                        <span class='macro'>error</span><span class='macro'>!</span>(<span class='string'>&quot;Received unexpected refresh for {:?}.&quot;</span>, <span class='ident'>data_id</span>);
-                        <span class='kw'>continue</span>;
                     }
                 };
                 <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>data_needed</span> {
@@ -2213,7 +2196,6 @@
                     }
                 }
             }
-            <span class='ident'>DataIdentifier</span>::<span class='ident'>Plain</span>(..) <span class='op'>=&gt;</span> <span class='macro'>unreachable</span><span class='macro'>!</span>(),
         }
     }
 
@@ -2223,7 +2205,6 @@
             <span class='ident'>DataIdentifier</span>::<span class='ident'>Structured</span>(..) <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>structured_data_count</span> <span class='op'>+=</span> <span class='number'>1</span>,
             <span class='ident'>DataIdentifier</span>::<span class='ident'>PubAppendable</span>(..) <span class='op'>|</span>
             <span class='ident'>DataIdentifier</span>::<span class='ident'>PrivAppendable</span>(..) <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>appendable_data_count</span> <span class='op'>+=</span> <span class='number'>1</span>,
-            <span class='ident'>DataIdentifier</span>::<span class='ident'>Plain</span>(..) <span class='op'>=&gt;</span> <span class='macro'>unreachable</span><span class='macro'>!</span>(),
         }
     }
 
@@ -2233,7 +2214,6 @@
             <span class='ident'>DataIdentifier</span>::<span class='ident'>Structured</span>(_, _) <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>structured_data_count</span> <span class='op'>-=</span> <span class='number'>1</span>,
             <span class='ident'>DataIdentifier</span>::<span class='ident'>PubAppendable</span>(..) <span class='op'>|</span>
             <span class='ident'>DataIdentifier</span>::<span class='ident'>PrivAppendable</span>(..) <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>appendable_data_count</span> <span class='op'>-=</span> <span class='number'>1</span>,
-            <span class='ident'>DataIdentifier</span>::<span class='ident'>Plain</span>(..) <span class='op'>=&gt;</span> <span class='macro'>unreachable</span><span class='macro'>!</span>(),
         }
     }
 

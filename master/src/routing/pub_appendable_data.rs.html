@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/routing-0.27.1/src/pub_appendable_data.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/git/checkouts/routing-616e72cf40f12bc0/stable/src/pub_appendable_data.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>pub_appendable_data.rs.html -- source</title>
@@ -756,7 +756,7 @@
 <span class='comment'>// licence you accepted on initial access to the Software (the &quot;Licences&quot;).</span>
 <span class='comment'>//</span>
 <span class='comment'>// By contributing code to the SAFE Network Software, or to this project generally, you agree to be</span>
-<span class='comment'>// bound by the terms of the MaidSafe Contributor Agreement, version 1.0.  This, along with the</span>
+<span class='comment'>// bound by the terms of the MaidSafe Contributor Agreement, version 1.1.  This, along with the</span>
 <span class='comment'>// Licenses can be found in the root directory of this project at LICENSE, COPYING and CONTRIBUTOR.</span>
 <span class='comment'>//</span>
 <span class='comment'>// Unless required by applicable law or agreed to in writing, the SAFE Network Software distributed</span>
@@ -771,9 +771,9 @@
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>BTreeSet</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>::{<span class='self'>self</span>, <span class='ident'>Debug</span>, <span class='ident'>Formatter</span>};
 <span class='kw'>use</span> <span class='ident'>xor_name</span>::<span class='ident'>XorName</span>;
-<span class='kw'>use</span> <span class='ident'>data</span>::{<span class='ident'>DataIdentifier</span>, <span class='ident'>verify_detached</span>, <span class='ident'>NO_OWNER_PUB_KEY</span>};
+<span class='kw'>use</span> <span class='ident'>data</span>::{<span class='ident'>DataIdentifier</span>, <span class='ident'>NO_OWNER_PUB_KEY</span>, <span class='ident'>verify_detached</span>};
 <span class='kw'>use</span> <span class='ident'>error</span>::<span class='ident'>RoutingError</span>;
-<span class='kw'>use</span> <span class='ident'>append_types</span>::{<span class='ident'>AppendedData</span>, <span class='ident'>AppendWrapper</span>, <span class='ident'>Filter</span>};
+<span class='kw'>use</span> <span class='ident'>append_types</span>::{<span class='ident'>AppendWrapper</span>, <span class='ident'>AppendedData</span>, <span class='ident'>Filter</span>};
 
 <span class='doccomment'>/// Maximum allowed size for a public appendable data to grow to</span>
 <span class='kw'>pub</span> <span class='kw'>const</span> <span class='ident'>MAX_PUB_APPENDABLE_DATA_SIZE_IN_BYTES</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='number'>102400</span>;
@@ -1070,7 +1070,7 @@
 
     <span class='kw'>use</span> <span class='ident'>rust_sodium</span>::<span class='ident'>crypto</span>::<span class='ident'>sign</span>;
     <span class='kw'>use</span> <span class='ident'>xor_name</span>::<span class='ident'>XorName</span>;
-    <span class='kw'>use</span> <span class='ident'>append_types</span>::{<span class='ident'>AppendedData</span>, <span class='ident'>AppendWrapper</span>, <span class='ident'>Filter</span>};
+    <span class='kw'>use</span> <span class='ident'>append_types</span>::{<span class='ident'>AppendWrapper</span>, <span class='ident'>AppendedData</span>, <span class='ident'>Filter</span>};
     <span class='kw'>use</span> <span class='ident'>data</span>::<span class='ident'>DataIdentifier</span>;
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>BTreeSet</span>;
 

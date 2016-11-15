@@ -461,18 +461,18 @@
         <span class='ident'>chunk_store_root</span>.<span class='ident'>push</span>(<span class='ident'>CHUNK_STORE_DIR</span>);
 
         <span class='kw'>let</span> (<span class='ident'>routing_sender</span>, <span class='ident'>routing_receiver</span>) <span class='op'>=</span> <span class='ident'>mpsc</span>::<span class='ident'>channel</span>();
-        <span class='kw'>let</span> <span class='ident'>routing_node</span> <span class='op'>=</span> <span class='ident'>Rc</span>::<span class='ident'>new</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='kw'>if</span> <span class='ident'>use_cache</span> {
+        <span class='kw'>let</span> <span class='ident'>routing_node</span> <span class='op'>=</span> <span class='ident'>Rc</span>::<span class='ident'>new</span>(<span class='kw'>if</span> <span class='ident'>use_cache</span> {
             <span class='ident'>builder</span>.<span class='ident'>cache</span>(<span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>Cache</span>::<span class='ident'>new</span>())).<span class='ident'>create</span>(<span class='ident'>routing_sender</span>)
         } <span class='kw'>else</span> {
             <span class='ident'>builder</span>.<span class='ident'>create</span>(<span class='ident'>routing_sender</span>)
-        }));
+        }?);
 
         <span class='prelude-val'>Ok</span>(<span class='ident'>Vault</span> {
             <span class='ident'>maid_manager</span>: <span class='ident'>MaidManager</span>::<span class='ident'>new</span>(<span class='ident'>routing_node</span>.<span class='ident'>clone</span>()),
-            <span class='ident'>data_manager</span>: <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>DataManager</span>::<span class='ident'>new</span>(<span class='ident'>routing_node</span>.<span class='ident'>clone</span>(),
-                                                <span class='ident'>chunk_store_root</span>,
-                                                <span class='ident'>config</span>.<span class='ident'>max_capacity</span>
-                                                    .<span class='ident'>unwrap_or</span>(<span class='ident'>DEFAULT_MAX_CAPACITY</span>))),
+            <span class='ident'>data_manager</span>: <span class='ident'>DataManager</span>::<span class='ident'>new</span>(<span class='ident'>routing_node</span>.<span class='ident'>clone</span>(),
+                                           <span class='ident'>chunk_store_root</span>,
+                                           <span class='ident'>config</span>.<span class='ident'>max_capacity</span>
+                                               .<span class='ident'>unwrap_or</span>(<span class='ident'>DEFAULT_MAX_CAPACITY</span>))?,
             <span class='ident'>_routing_node</span>: <span class='ident'>routing_node</span>.<span class='ident'>clone</span>(),
             <span class='ident'>routing_receiver</span>: <span class='ident'>routing_receiver</span>,
         })

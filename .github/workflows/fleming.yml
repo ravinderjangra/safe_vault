@@ -26,13 +26,10 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
         include:
           - os: ubuntu-latest
-            build-script: make musl
             target: x86_64-unknown-linux-musl
           - os: windows-latest
-            build-script: make build
             target: x86_64-pc-windows-gnu
           - os: macOS-latest
-            build-script: make build
             target: x86_64-apple-darwin
     steps:
       - uses: actions/checkout@v1
@@ -60,8 +57,10 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
       # Run build.
-      - shell: bash
-        run: ${{ matrix.build-script }}
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
       # Upload artifacts.
       - uses: actions/upload-artifact@master
         with:

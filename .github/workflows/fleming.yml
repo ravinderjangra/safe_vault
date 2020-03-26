@@ -38,6 +38,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+          target: ${{ matrix.target }}
 
       # Cache.
       - name: Cache cargo registry
@@ -60,7 +61,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release
+          args: --release --target={{ matrix.target }}
       # Upload artifacts.
       - uses: actions/upload-artifact@master
         with:

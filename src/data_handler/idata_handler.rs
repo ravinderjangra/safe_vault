@@ -287,11 +287,10 @@ impl IDataHandler {
         &mut self,
         holder: XorName,
     ) -> Option<BTreeMap<IDataAddress, BTreeSet<XorName>>> {
-        let holders = match self.get_metadata_for_all_chunks(holder) {
+        match self.get_metadata_for_all_chunks(holder) {
             Ok(addresses) => Some(addresses),
             Err(_error) => None,
-        };
-        holders
+        }
     }
 
     pub(super) fn handle_mutation_resp(
@@ -486,7 +485,7 @@ impl IDataHandler {
         }
 
         // Update local db to remove the address from the holders list
-        for (address, _) in &idata_addresses {
+        for address in idata_addresses.keys() {
             let db_key = address.to_db_key();
             let metadata = self.metadata.get::<ChunkMetadata>(&db_key).or_else(|| {
                 warn!("{}: Failed to get metadata from DB: {:?}", self, db_key);

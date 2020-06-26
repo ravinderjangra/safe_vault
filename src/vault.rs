@@ -20,8 +20,7 @@ use log::{debug, error, info, trace, warn};
 use rand::{CryptoRng, Rng, SeedableRng};
 use rand_chacha::ChaChaRng;
 use routing::{
-    event::Event as RoutingEvent, DstLocation, Node, Prefix, SrcLocation,
-    TransportEvent as ClientEvent,
+    event::Event as RoutingEvent, DstLocation, Node, SrcLocation, TransportEvent as ClientEvent,
 };
 use safe_nd::{
     ClientRequest, LoginPacketRequest, NodeFullId, PublicId, Request, Response, XorName,
@@ -419,7 +418,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
                 accumulated_rpc.message_id()
             );
             let prefix = match src {
-                SrcLocation::Node(name) => Prefix::<routing::XorName>::new(32, name),
+                SrcLocation::Node(name) => xor_name::Prefix::new(32, name),
                 SrcLocation::Section(prefix) => prefix,
             };
             self.data_handler_mut()?.handle_vault_rpc(
@@ -556,7 +555,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
                     if target == *self.id.public_id().name() {
                         info!("Vault is one of the targets. Accumulating message locally");
                         next_action = self.accumulate_rpc(
-                            SrcLocation::Node(routing::XorName(target.0)),
+                            SrcLocation::Node(xor_name::XorName(target.0)),
                             rpc.clone(),
                         );
                     } else {
@@ -604,7 +603,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
             .borrow_mut()
             .send_message(
                 SrcLocation::Node(name),
-                DstLocation::Node(routing::XorName(target.0)),
+                DstLocation::Node(xor_name::XorName(target.0)),
                 utils::serialise(&rpc),
             )
             .map_or_else(
@@ -654,6 +653,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
         //        same handler which Routing will call after receiving a message.
 
         if self.self_is_handler_for(&dst_address) {
+            let dst_section_address = *dst_address.clone();
             // TODO - We need a better way for determining which handler should be given the
             //        message.
             if let Rpc::Request { request, .. } = &rpc {
@@ -662,7 +662,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
                         .client_handler_mut()?
                         .handle_vault_rpc(requester_name, rpc),
                     _data_request => self.data_handler_mut()?.handle_vault_rpc(
-                        SrcLocation::Node(routing::XorName(rand::random())), // dummy xorname
+                        SrcLocation::Node(xor_name::XorName(dst_section_address.0)), // dummy xorname
                         rpc,
                         None,
                     ),

@@ -318,7 +318,7 @@ impl Messaging {
         if !self
             .routing_node
             .borrow()
-            .matches_our_prefix(&routing::XorName(client_id.name().0))
+            .matches_our_prefix(&xor_name::XorName(client_id.name().0))
             .unwrap_or(false)
         {
             debug!(
@@ -421,13 +421,13 @@ impl Messaging {
         if !self
             .routing_node
             .borrow()
-            .matches_our_prefix(&routing::XorName(client_id.name().0))
+            .matches_our_prefix(&xor_name::XorName(client_id.name().0))
             .unwrap_or(false)
         {
             let closest_known_elders = self
                 .routing_node
                 .borrow()
-                .our_elders_sorted_by_distance_to(&routing::XorName(client_id.name().0))
+                .our_elders_sorted_by_distance_to(&xor_name::XorName(client_id.name().0))
                 .into_iter()
                 .map(|p2p_node| {
                     let peer_addr = *p2p_node.peer_addr();

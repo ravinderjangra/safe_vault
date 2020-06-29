@@ -49,10 +49,6 @@ pub(crate) enum Action {
     /// B had made the request. Only used by `CreateLoginPacketFor`, where Client A is creating the
     /// new balance for Client B, but also effectively bundles B's `CreateLoginPacket` with it.
     ProxyClientRequest(Rpc),
-    /// Send a response as an adult or elder to own section's elders.
-    RespondToOurDataHandlers {
-        rpc: Rpc,
-    },
     RespondToClientHandlers {
         sender: XorName,
         rpc: Rpc,
@@ -65,5 +61,9 @@ pub(crate) enum Action {
     RespondToClient {
         message_id: MessageId,
         response: Response,
+    },
+    SendToSection {
+        target: Option<XorName>,
+        rpc: Rpc,
     },
 }

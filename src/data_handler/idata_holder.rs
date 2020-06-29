@@ -71,14 +71,16 @@ impl IDataHolder {
         let refund = utils::get_refund_for_put(&result);
 
         match sender {
-            SrcLocation::Node(_) => Some(Action::RespondToOurDataHandlers {
+            SrcLocation::Node(_) => Some(Action::SendToSection {
+                target: None,
                 rpc: Rpc::DuplicationComplete {
                     response: Response::Mutation(result),
                     message_id,
                     proof: Some((*data.address(), accumulated_signature?)),
                 },
             }),
-            SrcLocation::Section(_) => Some(Action::RespondToOurDataHandlers {
+            SrcLocation::Section(_) => Some(Action::SendToSection {
+                target: None,
                 rpc: Rpc::Response {
                     requester,
                     response: Response::Mutation(result),
@@ -119,7 +121,8 @@ impl IDataHolder {
                     },
                 })
             }
-            SrcLocation::Section(_) => Some(Action::RespondToOurDataHandlers {
+            SrcLocation::Section(_) => Some(Action::SendToSection {
+                target: None,
                 rpc: Rpc::Response {
                     requester,
                     response: Response::GetIData(result),
@@ -163,7 +166,8 @@ impl IDataHolder {
             Ok(())
         };
 
-        Some(Action::RespondToOurDataHandlers {
+        Some(Action::SendToSection {
+            target: None,
             rpc: Rpc::Response {
                 requester,
                 response: Response::Mutation(result),

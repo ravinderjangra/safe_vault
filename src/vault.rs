@@ -531,13 +531,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
             VoteFor(action) => self.client_handler_mut()?.handle_consensused_action(action),
             ForwardClientRequest(rpc) => self.forward_client_request(rpc),
             ProxyClientRequest(rpc) => self.proxy_client_request(rpc),
-            RespondToOurDataHandlers { rpc } => {
-                // TODO - once Routing is integrated, we'll construct the full message to send
-                //        onwards, and then if we're also part of the data handlers, we'll call that
-                //        same handler which Routing will call after receiving a message.
-
-                self.respond_to_data_handlers(rpc)
-            }
+            SendToSection { target, rpc } => self.send_to_section(target, rpc),
             RespondToClientHandlers { sender, rpc } => {
                 let client_name = utils::requester_address(&rpc);
 
@@ -577,22 +571,26 @@ impl<R: CryptoRng + Rng> Vault<R> {
         }
     }
 
-    fn respond_to_data_handlers(&self, rpc: Rpc) -> Option<Action> {
+    fn send_to_section(&self, target: Option<XorName>, rpc: Rpc) -> Option<Action> {
         let name = *self.routing_node.borrow().id().name();
+        let dst_section = match target {
+            Some(xorname) => routing::XorName(xorname.0),
+            None => name,
+        };
         self.routing_node
             .borrow_mut()
             .send_message(
                 SrcLocation::Node(name),
-                DstLocation::Section(name),
+                DstLocation::Section(dst_section),
                 utils::serialise(&rpc),
             )
             .map_or_else(
                 |err| {
-                    error!("Unable to respond to our data handlers: {:?}", err);
+                    error!("Unable to respond to a section: {:?}", err);
                     None
                 },
                 |()| {
-                    info!("Responded to our data handlers with: {:?}", &rpc);
+                    info!("Responded to a section with: {:?}", &rpc);
                     None
                 },
             )

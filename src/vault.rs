@@ -7,12 +7,14 @@
 // permissions and limitations relating to use of the SAFE Network Software.
 
 use crate::{
-    accumulator::Accumulator,
+    // accumulator::Accumulator,
     action::{Action, ConsensusAction},
     client_handler::ClientHandler,
     data_handler::DataHandler,
     rpc::Rpc,
-    utils, Config, Result,
+    utils,
+    Config,
+    Result,
 };
 use crossbeam_channel::{Receiver, Select};
 use hex_fmt::HexFmt;
@@ -20,10 +22,11 @@ use log::{debug, error, info, trace, warn};
 use rand::{CryptoRng, Rng, SeedableRng};
 use rand_chacha::ChaChaRng;
 use routing::{
-    event::Event as RoutingEvent, DstLocation, Node, SrcLocation, TransportEvent as ClientEvent,
+    event::Event as RoutingEvent, AccumulationError, DstLocation, Node, ProofShare,
+    SignatureAccumulator, SrcLocation, TransportEvent as ClientEvent,
 };
 use safe_nd::{
-    ClientRequest, LoginPacketRequest, NodeFullId, PublicId, Request, Response, XorName,
+    ClientRequest, LoginPacketRequest, MessageId, NodeFullId, PublicId, Request, Response, XorName, IDataAddress
 };
 use std::borrow::Cow;
 use std::{
@@ -42,12 +45,14 @@ enum State {
     Infant,
     Adult {
         data_handler: DataHandler,
-        accumulator: Accumulator,
+        accumulator: SignatureAccumulator<Request>,
+        accumulator2: SignatureAccumulator<IDataAddress>
     },
     Elder {
         client_handler: ClientHandler,
         data_handler: DataHandler,
-        accumulator: Accumulator,
+        accumulator: SignatureAccumulator<Request>,
+        accumulator2: SignatureAccumulator<IDataAddress>,
     },
 }
 
@@ -129,7 +134,8 @@ impl<R: CryptoRng + Rng> Vault<R> {
             State::Elder {
                 client_handler,
                 data_handler,
-                accumulator: Accumulator::new(routing_node.clone()),
+                accumulator: SignatureAccumulator::new(),
+                accumulator2: SignatureAccumulator::new(),
             }
         } else {
             info!("Initializing new Vault as Infant");
@@ -228,7 +234,8 @@ impl<R: CryptoRng + Rng> Vault<R> {
         )?;
         self.state = State::Adult {
             data_handler,
-            accumulator: Accumulator::new(self.routing_node.clone()),
+            accumulator: SignatureAccumulator::new(),
+            accumulator2: SignatureAccumulator::new(),
         };
         Ok(())
     }
@@ -255,7 +262,8 @@ impl<R: CryptoRng + Rng> Vault<R> {
         self.state = State::Elder {
             client_handler,
             data_handler,
-            accumulator: Accumulator::new(self.routing_node.clone()),
+            accumulator: SignatureAccumulator::new(),
+            accumulator2: SignatureAccumulator::new(),
         };
         Ok(())
     }
@@ -405,29 +413,96 @@ impl<R: CryptoRng + Rng> Vault<R> {
     }
 
     fn accumulate_rpc(&mut self, src: SrcLocation, rpc: Rpc) -> Option<Action> {
-        let id = *self.routing_node.borrow().id().name();
-        info!(
-            "{}: Accumulating signatures for {:?}",
-            &id,
-            rpc.message_id()
-        );
-        if let Some((accumulated_rpc, signature)) = self.accumulator_mut()?.accumulate_request(rpc)
-        {
-            info!(
-                "Got enough signatures for {:?}",
-                accumulated_rpc.message_id()
-            );
-            let prefix = match src {
-                SrcLocation::Node(name) => xor_name::Prefix::new(32, name),
-                SrcLocation::Section(prefix) => prefix,
-            };
-            self.data_handler_mut()?.handle_vault_rpc(
-                SrcLocation::Section(prefix),
-                accumulated_rpc,
-                Some(signature),
-            )
-        } else {
-            None
+        match &rpc {
+            Rpc::Request {
+                message_id, proof, request, requester
+            } => {
+                match self.accumulator_mut()?.add(request.clone(), proof.clone()?) {
+                    Ok((request, proof)) => {
+                        info!("Got enough signatures for {:?}", message_id);
+                        let prefix = match src {
+                            SrcLocation::Node(name) => xor_name::Prefix::new(32, name),
+                            SrcLocation::Section(prefix) => prefix,
+                        };
+                        let accumulated_rpc = Rpc::Request {
+                            request,
+                            requester: requester.clone(),
+                            message_id: *message_id,
+                            proof: None
+                        };
+                        self.data_handler_mut()?.handle_vault_rpc(
+                            SrcLocation::Section(prefix),
+                            accumulated_rpc,
+                            Some(proof.signature),
+                        )
+                    }
+                    Err(AccumulationError::NotEnoughShares) => {
+                        info!("Not enough shares for {:?}", message_id);
+                        None
+                    }
+                    Err(AccumulationError::AlreadyAccumulated) => {
+                        info!("Already accumlated request with {:?}", message_id);
+                        None
+                    }
+                    Err(AccumulationError::InvalidShare) => {
+                        info!("Got invalid signature share for {:?}", message_id);
+                        None
+                    }
+                    Err(err) => {
+                        error!(
+                            "Unexpected error when accumulating signatures for {:?}: {:?}",
+                            message_id, err
+                        );
+                        None
+                    }
+                }
+            },
+            Rpc::Duplicate {
+                message_id, proof, address, holders
+            } => match self.accumulator_mut2()?.add(*address, proof.clone()?) {
+                Ok((address, proof)) => {
+                    info!("Got enough signatures for {:?}", message_id);
+                    let prefix = match src {
+                        SrcLocation::Node(name) => xor_name::Prefix::new(32, name),
+                        SrcLocation::Section(prefix) => prefix,
+                    };
+                    let accumulated_rpc = Rpc::Duplicate {
+                        address,
+                        holders: holders.clone(),
+                        message_id: *message_id,
+                        proof: None,
+
+                    };
+                    self.data_handler_mut()?.handle_vault_rpc(
+                        SrcLocation::Section(prefix),
+                        accumulated_rpc,
+                        Some(proof.signature),
+                    )
+                }
+                Err(AccumulationError::NotEnoughShares) => {
+                    info!("Not enough shares for {:?}", message_id);
+                    None
+                }
+                Err(AccumulationError::AlreadyAccumulated) => {
+                    info!("Already accumlated request with {:?}", message_id);
+                    None
+                }
+                Err(AccumulationError::InvalidShare) => {
+                    info!("Got invalid signature share for {:?}", message_id);
+                    None
+                }
+                Err(err) => {
+                    error!(
+                        "Unexpected error when accumulating signatures for {:?}: {:?}",
+                        message_id, err
+                    );
+                    None
+                }
+            },
+            rpc => {
+                error!("Should not accumulate: {:?}", rpc);
+                None
+            }
         }
     }
 
@@ -437,18 +512,28 @@ impl<R: CryptoRng + Rng> Vault<R> {
                 Rpc::Request {
                     request,
                     requester,
-                    signature,
+                    proof,
                     ..
                 } => {
                     if matches!(requester, PublicId::Node(_)) {
-                        if let Some((_, signature)) = signature.clone() {
+                        if let Some(ProofShare {
+                            signature_share, ..
+                        }) = proof
+                        {
+                            let signature = signature_share.clone().0;
                             self.data_handler_mut()?
-                                .handle_vault_rpc(src, rpc, Some(signature.0))
+                                .handle_vault_rpc(src, rpc, Some(signature))
                         } else {
                             error!("Signature missing from duplication GET request");
                             None
                         }
                     } else {
+                        let id = *self.routing_node.borrow().id().name();
+                        info!(
+                            "{}: Accumulating signatures for {:?}",
+                            &id,
+                            rpc.message_id()
+                        );
                         match request {
                             Request::IData(_) => self.accumulate_rpc(src, rpc),
                             other => unimplemented!("Should not receive: {:?}", other),
@@ -729,7 +814,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
     }
 
     #[allow(unused)]
-    fn accumulator(&self) -> Option<&Accumulator> {
+    fn accumulator(&self) -> Option<&SignatureAccumulator<Request>> {
         match &self.state {
             State::Infant => None,
             State::Elder {
@@ -741,7 +826,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
         }
     }
 
-    fn accumulator_mut(&mut self) -> Option<&mut Accumulator> {
+    fn accumulator_mut(&mut self) -> Option<&mut SignatureAccumulator<Request>> {
         match &mut self.state {
             State::Infant => None,
             State::Elder {
@@ -752,6 +837,33 @@ impl<R: CryptoRng + Rng> Vault<R> {
                 ref mut accumulator,
                 ..
             } => Some(accumulator),
+        }
+    }
+
+    #[allow(unused)]
+    fn accumulator2(&self) -> Option<&SignatureAccumulator<IDataAddress>> {
+        match &self.state {
+            State::Infant => None,
+            State::Elder {
+                ref accumulator2, ..
+            } => Some(accumulator2),
+            State::Adult {
+                ref accumulator2, ..
+            } => Some(accumulator2),
+        }
+    }
+
+    fn accumulator_mut2(&mut self) -> Option<&mut SignatureAccumulator<IDataAddress>> {
+        match &mut self.state {
+            State::Infant => None,
+            State::Elder {
+                ref mut accumulator2,
+                ..
+            } => Some(accumulator2),
+            State::Adult {
+                ref mut accumulator2,
+                ..
+            } => Some(accumulator2),
         }
     }
 

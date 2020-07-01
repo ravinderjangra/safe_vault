@@ -10,7 +10,7 @@ use crate::{action::Action, rpc::Rpc, utils, vault::Init, Config, Result, ToDbKe
 use log::{debug, info, trace, warn};
 use pickledb::PickleDb;
 use rand::SeedableRng;
-use routing::Node;
+use routing::{Node, ProofShare};
 use safe_nd::{
     Error as NdError, IData, IDataAddress, IDataRequest, MessageId, NodeFullId, NodePublicId,
     PublicId, PublicKey, Request, Response, Result as NdResult, XorName,
@@ -22,7 +22,7 @@ use std::{
     fmt::{self, Display, Formatter},
     rc::Rc,
 };
-use threshold_crypto::{Signature, SignatureShare};
+use threshold_crypto::Signature;
 use tiny_keccak::sha3_256;
 
 const IMMUTABLE_META_DB_NAME: &str = "immutable_data.db";
@@ -147,14 +147,14 @@ impl IDataHandler {
         };
 
         info!("Storing {} copies of the data", target_holders.len());
-        let signature = self.sign_with_signature_share(&utils::serialise(&request));
+        let proof = self.sign_with_signature_share(&utils::serialise(&request));
         Some(Action::SendToPeers {
             targets: target_holders,
             rpc: Rpc::Request {
                 request,
                 requester,
                 message_id,
-                signature,
+                proof,
             },
         })
     }
@@ -193,14 +193,14 @@ impl IDataHandler {
                 return respond(Err(NdError::AccessDenied));
             }
         };
-        let signature = self.sign_with_signature_share(&utils::serialise(&request));
+        let proof = self.sign_with_signature_share(&utils::serialise(&request));
         Some(Action::SendToPeers {
             targets: metadata.holders,
             rpc: Rpc::Request {
                 request,
                 requester,
                 message_id,
-                signature,
+                proof,
             },
         })
     }
@@ -233,14 +233,14 @@ impl IDataHandler {
                 trace!("Generated MsgID {:?} to duplicate chunks", &message_id);
 
                 let new_holders = self.get_new_holders_for_chunk(&address);
-                let signature = self.sign_with_signature_share(&utils::serialise(&address));
+                let proof = self.sign_with_signature_share(&utils::serialise(&address));
                 let duplicate_chunk_action = Action::SendToPeers {
                     targets: new_holders,
                     rpc: Rpc::Duplicate {
                         address,
                         holders,
                         message_id,
-                        signature,
+                        proof,
                     },
                 };
                 actions.push(duplicate_chunk_action);
@@ -286,14 +286,14 @@ impl IDataHandler {
                 return respond(Err(NdError::AccessDenied));
             }
         };
-        let signature = self.sign_with_signature_share(&utils::serialise(&request));
+        let proof = self.sign_with_signature_share(&utils::serialise(&request));
         Some(Action::SendToPeers {
             targets: metadata.holders,
             rpc: Rpc::Request {
                 request,
                 requester: client_id,
                 message_id,
-                signature,
+                proof,
             },
         })
     }
@@ -643,13 +643,13 @@ impl IDataHandler {
         closest_holders
     }
 
-    fn sign_with_signature_share(&self, data: &[u8]) -> Option<(usize, SignatureShare)> {
-        let signature = self
-            .routing_node
-            .borrow()
-            .secret_key_share()
-            .map_or(None, |key| Some(key.sign(data)));
-        signature.map(|sig| (self.routing_node.borrow().our_index().unwrap_or(0), sig))
+    fn sign_with_signature_share(&self, data: &[u8]) -> Option<ProofShare> {
+        let routing_node = self.routing_node.borrow();
+        let pk_set = routing_node.public_key_set().ok()?.clone();
+        let index = routing_node.our_index().ok()?;
+        let secret_key_share = routing_node.secret_key_share().ok()?;
+        let proof = ProofShare::new(pk_set, index, secret_key_share, data);
+        Some(proof)
     }
 }
 

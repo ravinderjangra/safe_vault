@@ -85,7 +85,7 @@ impl Sequence {
             requester: client.public_id.clone(),
             request: Request::SData(request),
             message_id,
-            signature: None,
+            proof: None,
         }))
     }
 
@@ -212,7 +212,7 @@ impl Immutable {
             requester: client.public_id.clone(),
             request: Request::IData(IDataRequest::Get(address)),
             message_id,
-            signature: None,
+            proof: None,
         }))
     }
 
@@ -329,7 +329,7 @@ impl Mutable {
             requester: client.public_id.clone(),
             request: Request::MData(request),
             message_id,
-            signature: None,
+            proof: None,
         }))
     }
 

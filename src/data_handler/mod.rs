@@ -15,7 +15,7 @@ use crate::{action::Action, rpc::Rpc, utils, vault::Init, Config, Result};
 use idata_handler::IDataHandler;
 use idata_holder::IDataHolder;
 use mdata_handler::MDataHandler;
-use routing::{Node, SrcLocation};
+use routing::{Node, ProofShare, SrcLocation};
 use sdata_handler::SDataHandler;
 
 use log::{debug, error, trace};
@@ -164,13 +164,18 @@ impl DataHandler {
             holders,
         );
         let our_id = self.id.clone();
+        let public_key_set = self.routing_node.borrow().public_key_set().ok()?.clone();
         Some(Action::SendToPeers {
             targets: holders,
             rpc: Rpc::Request {
                 request: Request::IData(IDataRequest::Get(address)),
                 requester: PublicId::Node(our_id),
                 message_id,
-                signature: Some((0, SignatureShare(accumulated_signature?))),
+                proof: Some(ProofShare {
+                    index: 0,
+                    signature_share: SignatureShare(accumulated_signature?),
+                    public_key_set,
+                }),
             },
         })
     }

@@ -158,7 +158,7 @@ impl ClientHandler {
                     requester: client_public_id,
                     request,
                     message_id,
-                    signature: None,
+                    proof: None,
                 }))
             }
             Forward {
@@ -169,7 +169,7 @@ impl ClientHandler {
                 requester: client_public_id,
                 request,
                 message_id,
-                signature: None,
+                proof: None,
             })),
             PayAndProxy {
                 request,
@@ -193,7 +193,7 @@ impl ClientHandler {
                     requester: client_public_id,
                     request,
                     message_id,
-                    signature: None,
+                    proof: None,
                 }))
             }
         }

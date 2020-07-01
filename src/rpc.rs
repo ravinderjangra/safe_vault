@@ -8,6 +8,7 @@
 
 //! RPC messages internal to Vaults.
 
+use routing::ProofShare;
 use safe_nd::{Coins, IDataAddress, MessageId, PublicId, Request, Response, XorName};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
@@ -22,7 +23,7 @@ pub(crate) enum Rpc {
         request: Request,
         requester: PublicId,
         message_id: MessageId,
-        signature: Option<(usize, SignatureShare)>,
+        proof: Option<ProofShare>,
     },
     /// Wrapper for a response from Adults to DataHandlers, or from DataHandlers to ClientHandlers.
     Response {
@@ -37,7 +38,7 @@ pub(crate) enum Rpc {
         address: IDataAddress,
         holders: BTreeSet<XorName>,
         message_id: MessageId,
-        signature: Option<(usize, SignatureShare)>,
+        proof: Option<ProofShare>,
     },
     /// Wrapper for a duplicate completion response, from a node to elders.
     DuplicationComplete {

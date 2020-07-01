@@ -132,7 +132,7 @@ impl LoginPackets {
                             }),
                             requester,
                             message_id,
-                            signature: None,
+                            proof: None,
                         })),
                         Err(error) => {
                             // Refund amount (Including the cost of creating the balance)

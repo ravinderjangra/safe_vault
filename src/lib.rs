@@ -29,7 +29,6 @@
 // For quick_error
 #![recursion_limit = "128"]
 
-// mod accumulator;
 mod action;
 mod chunk_store;
 mod client_handler;

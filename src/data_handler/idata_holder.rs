@@ -69,7 +69,13 @@ impl IDataHolder {
                 .map_err(|error| error.to_string().into())
         };
         let refund = utils::get_refund_for_put(&result);
-
+        info!(
+            "{}: Sender {:?} asked us to store Immutable data at: {:?}. Result: {:?}",
+            self,
+            &sender,
+            data.address(),
+            &result
+        );
         match sender {
             SrcLocation::Node(_) => Some(Action::RespondToOurDataHandlers {
                 rpc: Rpc::DuplicationComplete {

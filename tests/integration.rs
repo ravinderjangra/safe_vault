@@ -939,7 +939,7 @@ fn delete_immutable_data_that_doesnt_exist() {
 }
 
 #[test]
-fn delete_immutable_data() {
+fn lionel() {
     let mut env = Environment::new();
     let mut client_a = env.new_connected_client();
     let mut client_b = env.new_connected_client();

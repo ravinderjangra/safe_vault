@@ -12,10 +12,11 @@ mod mdata_handler;
 mod sdata_handler;
 
 use crate::{action::Action, rpc::Rpc, utils, vault::Init, Config, Result};
+use bincode::serialize;
 use idata_handler::IDataHandler;
 use idata_holder::IDataHolder;
 use mdata_handler::MDataHandler;
-use routing::{Node, ProofShare, SrcLocation};
+use routing::{Node, Proof, ProofShare, SrcLocation};
 use sdata_handler::SDataHandler;
 
 use log::{debug, error, trace};
@@ -79,7 +80,7 @@ impl DataHandler {
         &mut self,
         src: SrcLocation,
         rpc: Rpc,
-        accumulated_signature: Option<Signature>,
+        proof: Option<Proof>,
     ) -> Option<Action> {
         match rpc {
             Rpc::Request {
@@ -87,7 +88,7 @@ impl DataHandler {
                 requester,
                 message_id,
                 ..
-            } => self.handle_request(src, requester, request, message_id, accumulated_signature),
+            } => self.handle_request(src, requester, request, message_id, proof),
             Rpc::Response {
                 response,
                 requester,
@@ -100,7 +101,7 @@ impl DataHandler {
                 holders,
                 message_id,
                 ..
-            } => self.handle_duplicate_request(address, holders, message_id, accumulated_signature),
+            } => self.handle_duplicate_request(address, holders, message_id, proof),
             Rpc::DuplicationComplete {
                 response,
                 message_id,
@@ -156,7 +157,7 @@ impl DataHandler {
         address: IDataAddress,
         holders: BTreeSet<XorName>,
         message_id: MessageId,
-        accumulated_signature: Option<Signature>,
+        proof: Option<Proof>,
     ) -> Option<Action> {
         trace!(
             "Sending GetIData request for address: ({:?}) to {:?}",
@@ -173,24 +174,34 @@ impl DataHandler {
                 message_id,
                 proof: Some(ProofShare {
                     index: 0,
-                    signature_share: SignatureShare(accumulated_signature?),
+                    signature_share: SignatureShare((proof?).signature),
                     public_key_set,
                 }),
             },
         })
     }
 
-    fn validate_section_signature(&self, request: &Request, signature: &Signature) -> Option<()> {
-        if self
-            .routing_node
-            .borrow()
-            .public_key_set()
-            .ok()?
-            .public_key()
-            .verify(signature, &utils::serialise(request))
-        {
-            Some(())
+    fn validate_section_signature(
+        &self,
+        request: &Request,
+        signature: Option<&Signature>,
+    ) -> Option<()> {
+        if let Some(signature) = signature {
+            if self
+                .routing_node
+                .borrow()
+                .public_key_set()
+                .ok()?
+                .public_key()
+                .verify(signature, &utils::serialise(request))
+            {
+                Some(())
+            } else {
+                error!("Invalid section signature for {:?}", request);
+                None
+            }
         } else {
+            error!("Missing section signature for {:?}", request);
             None
         }
     }
@@ -201,7 +212,7 @@ impl DataHandler {
         requester: PublicId,
         request: Request,
         message_id: MessageId,
-        accumulated_signature: Option<Signature>,
+        proof: Option<Proof>,
     ) -> Option<Action> {
         use Request::*;
         trace!(
@@ -220,20 +231,25 @@ impl DataHandler {
                             // Since the requester is a section, this message was sent by the data handlers to us
                             // as a single data handler, implying that we're a data holder chosen to store the
                             // chunk.
-                            if let Some(()) = self.validate_section_signature(
-                                &request,
-                                accumulated_signature.as_ref()?,
-                            ) {
-                                self.idata_holder.store_idata(
-                                    src,
-                                    &data,
-                                    requester,
-                                    message_id,
-                                    accumulated_signature,
-                                    request,
-                                )
+                            if let Some(proof) = proof {
+                                if proof.verify(&serialize(&request).ok()?) {
+                                    self.idata_holder.store_idata(
+                                        src,
+                                        &data,
+                                        requester,
+                                        message_id,
+                                        Some(proof.signature),
+                                        request,
+                                    )
+                                } else {
+                                    error!(
+                                        "Accumulated signature for {:?} is invalid!",
+                                        &message_id
+                                    );
+                                    None
+                                }
                             } else {
-                                error!("Accumulated signature for {:?} is invalid!", &message_id);
+                                error!("Missing signature for {:?}", &message_id);
                                 None
                             }
                         } else {
@@ -248,41 +264,47 @@ impl DataHandler {
                             // Since the requester is a node, this message was sent by the data handlers to us
                             // as a single data handler, implying that we're a data holder where the chunk is
                             // stored.
-                            if let Some(()) = self.validate_section_signature(
-                                &request,
-                                accumulated_signature.as_ref()?,
-                            ) {
-                                self.idata_holder.get_idata(
-                                    src,
-                                    address,
-                                    requester,
-                                    message_id,
-                                    request,
-                                    accumulated_signature,
-                                )
+                            if let Some(proof) = proof {
+                                if proof.verify(&serialize(&request).ok()?) {
+                                    self.idata_holder.get_idata(
+                                        src,
+                                        address,
+                                        requester,
+                                        message_id,
+                                        request,
+                                        Some(proof.signature),
+                                    )
+                                } else {
+                                    error!(
+                                        "Accumulated signature for {:?} is invalid!",
+                                        &message_id
+                                    );
+                                    None
+                                }
                             } else {
-                                error!("Accumulated signature is invalid!");
+                                error!("Missing signature for {:?}", &message_id);
                                 None
                             }
                         } else if matches!(requester, PublicId::Node(_)) {
-                            if self
-                                .routing_node
-                                .borrow()
-                                .public_key_set()
-                                .ok()?
-                                .public_key()
-                                .verify(accumulated_signature.as_ref()?, utils::serialise(&address))
-                            {
-                                self.idata_holder.get_idata(
-                                    src,
-                                    address,
-                                    requester,
-                                    message_id,
-                                    request,
-                                    accumulated_signature,
-                                )
+                            if let Some(proof) = proof {
+                                if proof.verify(&utils::serialise(&address)) {
+                                    self.idata_holder.get_idata(
+                                        src,
+                                        address,
+                                        requester,
+                                        message_id,
+                                        request,
+                                        Some(proof.signature),
+                                    )
+                                } else {
+                                    error!(
+                                        "Accumulated signature for {:?} is invalid!",
+                                        &message_id
+                                    );
+                                    None
+                                }
                             } else {
-                                error!("Accumulated signature is invalid!");
+                                error!("Missing signature for {:?}", &message_id);
                                 None
                             }
                         } else {
@@ -297,19 +319,24 @@ impl DataHandler {
                             // Since the requester is a node, this message was sent by the data handlers to us
                             // as a single data handler, implying that we're a data holder where the chunk is
                             // stored.
-                            if let Some(()) = self.validate_section_signature(
-                                &request,
-                                accumulated_signature.as_ref()?,
-                            ) {
-                                self.idata_holder.delete_unpub_idata(
-                                    address,
-                                    requester,
-                                    message_id,
-                                    request,
-                                    accumulated_signature,
-                                )
+                            if let Some(proof) = proof {
+                                if proof.verify(&utils::serialise(&address)) {
+                                    self.idata_holder.delete_unpub_idata(
+                                        address,
+                                        requester,
+                                        message_id,
+                                        request,
+                                        Some(proof.signature),
+                                    )
+                                } else {
+                                    error!(
+                                        "Accumulated signature for {:?} is invalid!",
+                                        &message_id
+                                    );
+                                    None
+                                }
                             } else {
-                                error!("Accumulated signature is invalid!");
+                                error!("Missing signature for {:?}", &message_id);
                                 None
                             }
                         } else {
@@ -379,7 +406,7 @@ impl DataHandler {
         if let Some((request, signature)) = proof {
             if !matches!(requester, PublicId::Node(_))
                 && self
-                    .validate_section_signature(&request, &signature)
+                    .validate_section_signature(&request, Some(&signature))
                     .is_none()
             {
                 error!("Invalid section signature");

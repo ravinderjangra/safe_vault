@@ -194,6 +194,7 @@ impl TestVault {
 
         let mut config = Config::default();
         config.set_root_dir(root_dir.path());
+        config.set_log_dir(root_dir.path());
 
         let (command_tx, command_rx) = crossbeam_channel::bounded(0);
 

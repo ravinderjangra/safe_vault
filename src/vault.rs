@@ -22,11 +22,12 @@ use log::{debug, error, info, trace, warn};
 use rand::{CryptoRng, Rng, SeedableRng};
 use rand_chacha::ChaChaRng;
 use routing::{
-    event::Event as RoutingEvent, AccumulationError, DstLocation, Node, ProofShare,
+    event::Event as RoutingEvent, AccumulationError, DstLocation, Node, Proof, ProofShare,
     SignatureAccumulator, SrcLocation, TransportEvent as ClientEvent,
 };
 use safe_nd::{
-    ClientRequest, LoginPacketRequest, MessageId, NodeFullId, PublicId, Request, Response, XorName, IDataAddress
+    ClientRequest, IDataAddress, LoginPacketRequest, NodeFullId, PublicId, Request, Response,
+    XorName,
 };
 use std::borrow::Cow;
 use std::{
@@ -46,7 +47,7 @@ enum State {
     Adult {
         data_handler: DataHandler,
         accumulator: SignatureAccumulator<Request>,
-        accumulator2: SignatureAccumulator<IDataAddress>
+        accumulator2: SignatureAccumulator<IDataAddress>,
     },
     Elder {
         client_handler: ClientHandler,
@@ -415,50 +416,54 @@ impl<R: CryptoRng + Rng> Vault<R> {
     fn accumulate_rpc(&mut self, src: SrcLocation, rpc: Rpc) -> Option<Action> {
         match &rpc {
             Rpc::Request {
-                message_id, proof, request, requester
-            } => {
-                match self.accumulator_mut()?.add(request.clone(), proof.clone()?) {
-                    Ok((request, proof)) => {
-                        info!("Got enough signatures for {:?}", message_id);
-                        let prefix = match src {
-                            SrcLocation::Node(name) => xor_name::Prefix::new(32, name),
-                            SrcLocation::Section(prefix) => prefix,
-                        };
-                        let accumulated_rpc = Rpc::Request {
-                            request,
-                            requester: requester.clone(),
-                            message_id: *message_id,
-                            proof: None
-                        };
-                        self.data_handler_mut()?.handle_vault_rpc(
-                            SrcLocation::Section(prefix),
-                            accumulated_rpc,
-                            Some(proof.signature),
-                        )
-                    }
-                    Err(AccumulationError::NotEnoughShares) => {
-                        info!("Not enough shares for {:?}", message_id);
-                        None
-                    }
-                    Err(AccumulationError::AlreadyAccumulated) => {
-                        info!("Already accumlated request with {:?}", message_id);
-                        None
-                    }
-                    Err(AccumulationError::InvalidShare) => {
-                        info!("Got invalid signature share for {:?}", message_id);
-                        None
-                    }
-                    Err(err) => {
-                        error!(
-                            "Unexpected error when accumulating signatures for {:?}: {:?}",
-                            message_id, err
-                        );
-                        None
-                    }
+                message_id,
+                proof,
+                request,
+                requester,
+            } => match self.accumulator_mut()?.add(request.clone(), proof.clone()?) {
+                Ok((request, proof)) => {
+                    info!("Got enough signatures for {:?}", message_id);
+                    let prefix = match src {
+                        SrcLocation::Node(name) => xor_name::Prefix::new(32, name),
+                        SrcLocation::Section(prefix) => prefix,
+                    };
+                    let accumulated_rpc = Rpc::Request {
+                        request,
+                        requester: requester.clone(),
+                        message_id: *message_id,
+                        proof: None,
+                    };
+                    self.data_handler_mut()?.handle_vault_rpc(
+                        SrcLocation::Section(prefix),
+                        accumulated_rpc,
+                        Some(proof),
+                    )
+                }
+                Err(AccumulationError::NotEnoughShares) => {
+                    info!("Not enough shares for {:?}", message_id);
+                    None
+                }
+                Err(AccumulationError::AlreadyAccumulated) => {
+                    info!("Already accumlated request with {:?}", message_id);
+                    None
+                }
+                Err(AccumulationError::InvalidShare) => {
+                    info!("Got invalid signature share for {:?}", message_id);
+                    None
+                }
+                Err(err) => {
+                    error!(
+                        "Unexpected error when accumulating signatures for {:?}: {:?}",
+                        message_id, err
+                    );
+                    None
                 }
             },
             Rpc::Duplicate {
-                message_id, proof, address, holders
+                message_id,
+                proof,
+                address,
+                holders,
             } => match self.accumulator_mut2()?.add(*address, proof.clone()?) {
                 Ok((address, proof)) => {
                     info!("Got enough signatures for {:?}", message_id);
@@ -471,12 +476,11 @@ impl<R: CryptoRng + Rng> Vault<R> {
                         holders: holders.clone(),
                         message_id: *message_id,
                         proof: None,
-
                     };
                     self.data_handler_mut()?.handle_vault_rpc(
                         SrcLocation::Section(prefix),
                         accumulated_rpc,
-                        Some(proof.signature),
+                        Some(proof),
                     )
                 }
                 Err(AccumulationError::NotEnoughShares) => {
@@ -517,12 +521,21 @@ impl<R: CryptoRng + Rng> Vault<R> {
                 } => {
                     if matches!(requester, PublicId::Node(_)) {
                         if let Some(ProofShare {
-                            signature_share, ..
+                            signature_share,
+                            public_key_set,
+                            ..
                         }) = proof
                         {
                             let signature = signature_share.clone().0;
-                            self.data_handler_mut()?
-                                .handle_vault_rpc(src, rpc, Some(signature))
+                            let public_key = public_key_set.public_key();
+                            self.data_handler_mut()?.handle_vault_rpc(
+                                src,
+                                rpc,
+                                Some(Proof {
+                                    signature,
+                                    public_key,
+                                }),
+                            )
                         } else {
                             error!("Signature missing from duplication GET request");
                             None

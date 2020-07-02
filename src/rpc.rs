@@ -12,7 +12,7 @@ use routing::ProofShare;
 use safe_nd::{Coins, IDataAddress, MessageId, PublicId, Request, Response, XorName};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
-use threshold_crypto::{Signature, SignatureShare};
+use threshold_crypto::Signature;
 
 /// RPC messages exchanged between nodes.
 #[allow(clippy::large_enum_variant)]

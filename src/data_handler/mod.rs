@@ -286,8 +286,9 @@ impl DataHandler {
                                 None
                             }
                         } else if matches!(requester, PublicId::Node(_)) {
+                            let request: Request = IData(IDataRequest::Get(address));
                             if let Some(proof) = proof {
-                                if proof.verify(&utils::serialise(&address)) {
+                                if proof.verify(&utils::serialise(&(request.clone(), message_id))) {
                                     self.idata_holder.get_idata(
                                         src,
                                         address,

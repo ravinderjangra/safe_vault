@@ -44,13 +44,11 @@ enum State {
     Adult {
         data_handler: DataHandler,
         accumulator: SignatureAccumulator<(Request, MessageId)>,
-        accumulator2: SignatureAccumulator<IDataAddress>,
     },
     Elder {
         client_handler: ClientHandler,
         data_handler: DataHandler,
         accumulator: SignatureAccumulator<(Request, MessageId)>,
-        accumulator2: SignatureAccumulator<IDataAddress>,
     },
 }
 
@@ -133,7 +131,6 @@ impl<R: CryptoRng + Rng> Vault<R> {
                 client_handler,
                 data_handler,
                 accumulator: SignatureAccumulator::new(),
-                accumulator2: SignatureAccumulator::new(),
             }
         } else {
             info!("Initializing new Vault as Infant");
@@ -233,7 +230,6 @@ impl<R: CryptoRng + Rng> Vault<R> {
         self.state = State::Adult {
             data_handler,
             accumulator: SignatureAccumulator::new(),
-            accumulator2: SignatureAccumulator::new(),
         };
         Ok(())
     }
@@ -261,7 +257,6 @@ impl<R: CryptoRng + Rng> Vault<R> {
             client_handler,
             data_handler,
             accumulator: SignatureAccumulator::new(),
-            accumulator2: SignatureAccumulator::new(),
         };
         Ok(())
     }
@@ -464,43 +459,46 @@ impl<R: CryptoRng + Rng> Vault<R> {
                 proof,
                 address,
                 holders,
-            } => match self.accumulator_mut2()?.add(*address, proof.clone()?) {
-                Ok((address, proof)) => {
-                    info!("Got enough signatures for {:?}", message_id);
-                    let prefix = match src {
-                        SrcLocation::Node(name) => xor_name::Prefix::new(32, name),
-                        SrcLocation::Section(prefix) => prefix,
-                    };
-                    let accumulated_rpc = Rpc::Duplicate {
-                        address,
-                        holders: holders.clone(),
-                        message_id: *message_id,
-                        proof: None,
-                    };
-                    self.data_handler_mut()?.handle_vault_rpc(
-                        SrcLocation::Section(prefix),
-                        accumulated_rpc,
-                        Some(proof),
-                    )
-                }
-                Err(AccumulationError::NotEnoughShares) => {
-                    info!("Not enough shares for {:?}", message_id);
-                    None
-                }
-                Err(AccumulationError::AlreadyAccumulated) => {
-                    info!("Already accumlated request with {:?}", message_id);
-                    None
-                }
-                Err(AccumulationError::InvalidShare) => {
-                    info!("Got invalid signature share for {:?}", message_id);
-                    None
-                }
-                Err(err) => {
-                    error!(
-                        "Unexpected error when accumulating signatures for {:?}: {:?}",
-                        message_id, err
-                    );
-                    None
+            } => {
+                let request = Request::IData(safe_nd::IDataRequest::Get(*address));
+                match self.accumulator_mut()?.add((request, *message_id), proof.clone()?) {
+                    Ok(((_, message_id), proof)) => {
+                        info!("Got enough signatures for {:?}", message_id);
+                        let prefix = match src {
+                            SrcLocation::Node(name) => xor_name::Prefix::new(32, name),
+                            SrcLocation::Section(prefix) => prefix,
+                        };
+                        let accumulated_rpc = Rpc::Duplicate {
+                            address: *address,
+                            holders: holders.clone(),
+                            message_id,
+                            proof: None,
+                        };
+                        self.data_handler_mut()?.handle_vault_rpc(
+                            SrcLocation::Section(prefix),
+                            accumulated_rpc,
+                            Some(proof),
+                        )
+                    }
+                    Err(AccumulationError::NotEnoughShares) => {
+                        info!("Not enough shares for {:?}", message_id);
+                        None
+                    }
+                    Err(AccumulationError::AlreadyAccumulated) => {
+                        info!("Already accumlated request with {:?}", message_id);
+                        None
+                    }
+                    Err(AccumulationError::InvalidShare) => {
+                        info!("Got invalid signature share for {:?}", message_id);
+                        None
+                    }
+                    Err(err) => {
+                        error!(
+                            "Unexpected error when accumulating signatures for {:?}: {:?}",
+                            message_id, err
+                        );
+                        None
+                    }
                 }
             },
             rpc => {
@@ -850,33 +848,6 @@ impl<R: CryptoRng + Rng> Vault<R> {
                 ref mut accumulator,
                 ..
             } => Some(accumulator),
-        }
-    }
-
-    #[allow(unused)]
-    fn accumulator2(&self) -> Option<&SignatureAccumulator<IDataAddress>> {
-        match &self.state {
-            State::Infant => None,
-            State::Elder {
-                ref accumulator2, ..
-            } => Some(accumulator2),
-            State::Adult {
-                ref accumulator2, ..
-            } => Some(accumulator2),
-        }
-    }
-
-    fn accumulator_mut2(&mut self) -> Option<&mut SignatureAccumulator<IDataAddress>> {
-        match &mut self.state {
-            State::Infant => None,
-            State::Elder {
-                ref mut accumulator2,
-                ..
-            } => Some(accumulator2),
-            State::Adult {
-                ref mut accumulator2,
-                ..
-            } => Some(accumulator2),
         }
     }
 

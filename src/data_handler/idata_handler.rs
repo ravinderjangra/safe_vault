@@ -233,9 +233,12 @@ impl IDataHandler {
 
                 let message_id = MessageId(XorName(sha3_256(&hash_bytes)));
                 trace!("Generated MsgID {:?} to duplicate chunks", &message_id);
+                
+                // Wrap the address in a get request and sign it along with the message id
+                let request = Request::IData(IDataRequest::Get(address));
 
                 let new_holders = self.get_new_holders_for_chunk(&address);
-                let proof = self.sign_with_signature_share(&utils::serialise(&address));
+                let proof = self.sign_with_signature_share(&utils::serialise(&(request, message_id)));
                 let duplicate_chunk_action = Action::SendToPeers {
                     targets: new_holders,
                     rpc: Rpc::Duplicate {

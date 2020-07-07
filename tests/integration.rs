@@ -643,7 +643,6 @@ fn balances_by_app_with_insufficient_permissions() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#[ignore]
 #[test]
 fn put_immutable_data() {
     let mut env = Environment::new();
@@ -939,7 +938,7 @@ fn delete_immutable_data_that_doesnt_exist() {
 }
 
 #[test]
-fn lionel() {
+fn delete_immutable_data() {
     let mut env = Environment::new();
     let mut client_a = env.new_connected_client();
     let mut client_b = env.new_connected_client();

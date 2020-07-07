@@ -7,14 +7,11 @@
 // permissions and limitations relating to use of the SAFE Network Software.
 
 use crate::{
-    // accumulator::Accumulator,
     action::{Action, ConsensusAction},
     client_handler::ClientHandler,
     data_handler::DataHandler,
     rpc::Rpc,
-    utils,
-    Config,
-    Result,
+    utils, Config, Result,
 };
 use crossbeam_channel::{Receiver, Select};
 use hex_fmt::HexFmt;
@@ -26,8 +23,8 @@ use routing::{
     SignatureAccumulator, SrcLocation, TransportEvent as ClientEvent,
 };
 use safe_nd::{
-    ClientRequest, IDataAddress, LoginPacketRequest, NodeFullId, PublicId, Request, Response,
-    XorName,
+    ClientRequest, IDataAddress, LoginPacketRequest, MessageId, NodeFullId, PublicId, Request,
+    Response, XorName,
 };
 use std::borrow::Cow;
 use std::{
@@ -46,13 +43,13 @@ enum State {
     Infant,
     Adult {
         data_handler: DataHandler,
-        accumulator: SignatureAccumulator<Request>,
+        accumulator: SignatureAccumulator<(Request, MessageId)>,
         accumulator2: SignatureAccumulator<IDataAddress>,
     },
     Elder {
         client_handler: ClientHandler,
         data_handler: DataHandler,
-        accumulator: SignatureAccumulator<Request>,
+        accumulator: SignatureAccumulator<(Request, MessageId)>,
         accumulator2: SignatureAccumulator<IDataAddress>,
     },
 }
@@ -420,8 +417,11 @@ impl<R: CryptoRng + Rng> Vault<R> {
                 proof,
                 request,
                 requester,
-            } => match self.accumulator_mut()?.add(request.clone(), proof.clone()?) {
-                Ok((request, proof)) => {
+            } => match self
+                .accumulator_mut()?
+                .add((request.clone(), *message_id), proof.clone()?)
+            {
+                Ok(((request, message_id), proof)) => {
                     info!("Got enough signatures for {:?}", message_id);
                     let prefix = match src {
                         SrcLocation::Node(name) => xor_name::Prefix::new(32, name),
@@ -430,7 +430,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
                     let accumulated_rpc = Rpc::Request {
                         request,
                         requester: requester.clone(),
-                        message_id: *message_id,
+                        message_id,
                         proof: None,
                     };
                     self.data_handler_mut()?.handle_vault_rpc(
@@ -827,7 +827,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
     }
 
     #[allow(unused)]
-    fn accumulator(&self) -> Option<&SignatureAccumulator<Request>> {
+    fn accumulator(&self) -> Option<&SignatureAccumulator<(Request, MessageId)>> {
         match &self.state {
             State::Infant => None,
             State::Elder {
@@ -839,7 +839,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
         }
     }
 
-    fn accumulator_mut(&mut self) -> Option<&mut SignatureAccumulator<Request>> {
+    fn accumulator_mut(&mut self) -> Option<&mut SignatureAccumulator<(Request, MessageId)>> {
         match &mut self.state {
             State::Infant => None,
             State::Elder {

@@ -100,8 +100,8 @@ impl DataHandler {
                 address,
                 holders,
                 message_id,
-                ..
-            } => self.handle_duplicate_request(address, holders, message_id, proof),
+                proof: proof_share,
+            } => self.handle_duplicate_request(address, holders, message_id, proof, proof_share),
             Rpc::DuplicationComplete {
                 response,
                 message_id,
@@ -120,13 +120,14 @@ impl DataHandler {
         signature: Signature,
     ) -> Option<Action> {
         use Response::*;
+        let request = Request::IData(IDataRequest::Get(idata_address));
         if self
             .routing_node
             .borrow()
             .public_key_set()
             .ok()?
             .public_key()
-            .verify(&signature, &utils::serialise(&idata_address))
+            .verify(&signature, &utils::serialise(&(request, message_id)))
         {
             match response {
                 Mutation(result) => self.handle_idata_request(|idata_handler| {
@@ -158,27 +159,34 @@ impl DataHandler {
         holders: BTreeSet<XorName>,
         message_id: MessageId,
         proof: Option<Proof>,
+        proof_share: Option<ProofShare>,
     ) -> Option<Action> {
         trace!(
-            "Sending GetIData request for address: ({:?}) to {:?}",
+            "Sending GetIData request for address: ({:?}) to {:?} for duplication with proofs {:?} and {:?}",
             address,
             holders,
+            proof,
+            proof_share
         );
         let our_id = self.id.clone();
-        let public_key_set = self.routing_node.borrow().public_key_set().ok()?.clone();
-        Some(Action::SendToPeers {
-            targets: holders,
-            rpc: Rpc::Request {
-                request: Request::IData(IDataRequest::Get(address)),
-                requester: PublicId::Node(our_id),
-                message_id,
-                proof: Some(ProofShare {
-                    index: 0,
-                    signature_share: SignatureShare((proof?).signature),
-                    public_key_set,
-                }),
-            },
-        })
+        if let (Some(proof), Some(proof_share)) = (proof, proof_share) {
+            Some(Action::SendToPeers {
+                targets: holders,
+                rpc: Rpc::Request {
+                    request: Request::IData(IDataRequest::Get(address)),
+                    requester: PublicId::Node(our_id),
+                    message_id,
+                    proof: Some(ProofShare {
+                        index: 0,
+                        signature_share: SignatureShare(proof.signature),
+                        public_key_set: proof_share.public_key_set,
+                    }),
+                },
+            })
+        } else {
+            error!("Insufficient proof for duplication");
+            None
+        }
     }
 
     fn validate_section_signature(

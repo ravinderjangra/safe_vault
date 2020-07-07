@@ -147,7 +147,8 @@ impl IDataHandler {
         };
 
         info!("Storing {} copies of the data", target_holders.len());
-        let proof = self.sign_with_signature_share(&utils::serialise(&request));
+        let proof =
+            self.sign_with_signature_share(&utils::serialise(&(request.clone(), message_id)));
         Some(Action::SendToPeers {
             targets: target_holders,
             rpc: Rpc::Request {
@@ -193,7 +194,8 @@ impl IDataHandler {
                 return respond(Err(NdError::AccessDenied));
             }
         };
-        let proof = self.sign_with_signature_share(&utils::serialise(&request));
+        let proof =
+            self.sign_with_signature_share(&utils::serialise(&(request.clone(), message_id)));
         Some(Action::SendToPeers {
             targets: metadata.holders,
             rpc: Rpc::Request {
@@ -286,7 +288,8 @@ impl IDataHandler {
                 return respond(Err(NdError::AccessDenied));
             }
         };
-        let proof = self.sign_with_signature_share(&utils::serialise(&request));
+        let proof =
+            self.sign_with_signature_share(&utils::serialise(&(request.clone(), message_id)));
         Some(Action::SendToPeers {
             targets: metadata.holders,
             rpc: Rpc::Request {

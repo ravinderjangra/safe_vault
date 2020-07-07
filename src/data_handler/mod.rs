@@ -183,7 +183,7 @@ impl DataHandler {
 
     fn validate_section_signature(
         &self,
-        request: &Request,
+        payload: &(Request, MessageId),
         signature: Option<&Signature>,
     ) -> Option<()> {
         if let Some(signature) = signature {
@@ -193,15 +193,15 @@ impl DataHandler {
                 .public_key_set()
                 .ok()?
                 .public_key()
-                .verify(signature, &utils::serialise(request))
+                .verify(signature, &utils::serialise(payload))
             {
                 Some(())
             } else {
-                error!("Invalid section signature for {:?}", request);
+                error!("Invalid section signature for {:?}", payload);
                 None
             }
         } else {
-            error!("Missing section signature for {:?}", request);
+            error!("Missing section signature for {:?}", payload);
             None
         }
     }
@@ -232,7 +232,7 @@ impl DataHandler {
                             // as a single data handler, implying that we're a data holder chosen to store the
                             // chunk.
                             if let Some(proof) = proof {
-                                if proof.verify(&serialize(&request).ok()?) {
+                                if proof.verify(&serialize(&(request.clone(), message_id)).ok()?) {
                                     self.idata_holder.store_idata(
                                         src,
                                         &data,
@@ -265,7 +265,7 @@ impl DataHandler {
                             // as a single data handler, implying that we're a data holder where the chunk is
                             // stored.
                             if let Some(proof) = proof {
-                                if proof.verify(&serialize(&request).ok()?) {
+                                if proof.verify(&serialize(&(request.clone(), message_id)).ok()?) {
                                     self.idata_holder.get_idata(
                                         src,
                                         address,
@@ -320,7 +320,7 @@ impl DataHandler {
                             // as a single data handler, implying that we're a data holder where the chunk is
                             // stored.
                             if let Some(proof) = proof {
-                                if proof.verify(&utils::serialise(&address)) {
+                                if proof.verify(&utils::serialise(&(request.clone(), message_id))) {
                                     self.idata_holder.delete_unpub_idata(
                                         address,
                                         requester,
@@ -406,7 +406,7 @@ impl DataHandler {
         if let Some((request, signature)) = proof {
             if !matches!(requester, PublicId::Node(_))
                 && self
-                    .validate_section_signature(&request, Some(&signature))
+                    .validate_section_signature(&(request.clone(), message_id), Some(&signature))
                     .is_none()
             {
                 error!("Invalid section signature");

@@ -406,15 +406,15 @@ impl<R: CryptoRng + Rng> Vault<R> {
     }
 
     fn accumulate_rpc(&mut self, src: SrcLocation, rpc: Rpc) -> Option<Action> {
-        match &rpc {
+        match rpc {
             Rpc::Request {
                 message_id,
-                proof,
+                proof: proof_share,
                 request,
                 requester,
             } => match self
                 .accumulator_mut()?
-                .add((request.clone(), *message_id), proof.clone()?)
+                .add((request, message_id), proof_share.clone()?)
             {
                 Ok(((request, message_id), proof)) => {
                     info!("Got enough signatures for {:?}", message_id);
@@ -426,7 +426,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
                         request,
                         requester: requester.clone(),
                         message_id,
-                        proof: None,
+                        proof: proof_share,
                     };
                     self.data_handler_mut()?.handle_vault_rpc(
                         SrcLocation::Section(prefix),
@@ -456,23 +456,26 @@ impl<R: CryptoRng + Rng> Vault<R> {
             },
             Rpc::Duplicate {
                 message_id,
-                proof,
+                proof: proof_share,
                 address,
                 holders,
             } => {
-                let request = Request::IData(safe_nd::IDataRequest::Get(*address));
-                match self.accumulator_mut()?.add((request, *message_id), proof.clone()?) {
+                let request = Request::IData(safe_nd::IDataRequest::Get(address));
+                match self
+                    .accumulator_mut()?
+                    .add((request, message_id), proof_share.clone()?)
+                {
                     Ok(((_, message_id), proof)) => {
-                        info!("Got enough signatures for {:?}", message_id);
+                        info!("Got enough signatures for duplication {:?}", message_id);
                         let prefix = match src {
                             SrcLocation::Node(name) => xor_name::Prefix::new(32, name),
                             SrcLocation::Section(prefix) => prefix,
                         };
                         let accumulated_rpc = Rpc::Duplicate {
-                            address: *address,
+                            address,
                             holders: holders.clone(),
                             message_id,
-                            proof: None,
+                            proof: proof_share,
                         };
                         self.data_handler_mut()?.handle_vault_rpc(
                             SrcLocation::Section(prefix),
@@ -500,7 +503,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
                         None
                     }
                 }
-            },
+            }
             rpc => {
                 error!("Should not accumulate: {:?}", rpc);
                 None
@@ -517,6 +520,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
                     proof,
                     ..
                 } => {
+                    debug!("Got {:?} from {:?}", request, requester);
                     if matches!(requester, PublicId::Node(_)) {
                         if let Some(ProofShare {
                             signature_share,
@@ -524,6 +528,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
                             ..
                         }) = proof
                         {
+                            debug!("Got IDataGet request from a node for duplication");
                             let signature = signature_share.clone().0;
                             let public_key = public_key_set.public_key();
                             self.data_handler_mut()?.handle_vault_rpc(

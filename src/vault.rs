@@ -23,8 +23,7 @@ use routing::{
     SignatureAccumulator, SrcLocation, TransportEvent as ClientEvent,
 };
 use safe_nd::{
-    ClientRequest, IDataAddress, LoginPacketRequest, MessageId, NodeFullId, PublicId, Request,
-    Response, XorName,
+    ClientRequest, LoginPacketRequest, MessageId, NodeFullId, PublicId, Request, Response, XorName,
 };
 use std::borrow::Cow;
 use std::{
@@ -424,7 +423,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
                     };
                     let accumulated_rpc = Rpc::Request {
                         request,
-                        requester: requester.clone(),
+                        requester,
                         message_id,
                         proof: proof_share,
                     };
@@ -473,7 +472,7 @@ impl<R: CryptoRng + Rng> Vault<R> {
                         };
                         let accumulated_rpc = Rpc::Duplicate {
                             address,
-                            holders: holders.clone(),
+                            holders,
                             message_id,
                             proof: proof_share,
                         };

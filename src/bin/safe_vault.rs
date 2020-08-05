@@ -27,7 +27,7 @@
     unused_results
 )]
 
-use flexi_logger::{DeferredNow, Logger};
+use flexi_logger::{DeferredNow, LogSpecBuilder, Logger, ModuleFilter};
 use log::{self, Record};
 use routing::{Node, NodeConfig};
 use safe_vault::{self, write_connection_info, Command, Config, Vault};
@@ -39,6 +39,7 @@ use unwrap::unwrap;
 
 const IGD_ERROR_MESSAGE: &str = "Automatic Port forwarding Failed. Check if UPnP is enabled in your router's settings and try again. \
                                 Note that not all routers are supported in this testnet. Visit https://safenetforum.org for more information.";
+const VAULT_MODULE_NAME: &str = "safe_vault";
 
 /// Runs a SAFE Network vault.
 fn main() {
@@ -77,8 +78,14 @@ fn main() {
         )
     };
 
-    let verbosity = config.verbose().to_level_filter().to_string();
-    let logger = Logger::with_env_or_str(verbosity)
+    let level_filter = config.verbose().to_level_filter();
+    let logger_specs = LogSpecBuilder::from_module_filters(&[ModuleFilter {
+        module_name: Some(VAULT_MODULE_NAME.to_string()),
+        level_filter,
+    }])
+    .finalize();
+
+    let logger = Logger::with(logger_specs)
         .format(do_format)
         .suppress_timestamp();
 

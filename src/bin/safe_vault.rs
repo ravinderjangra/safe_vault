@@ -27,7 +27,7 @@
     unused_results
 )]
 
-use flexi_logger::{DeferredNow, LogSpecBuilder, Logger, ModuleFilter};
+use flexi_logger::{DeferredNow, Logger};
 use log::{self, Record};
 use routing::{Node, NodeConfig};
 use safe_vault::{self, write_connection_info, Command, Config, Vault};
@@ -79,13 +79,8 @@ fn main() {
     };
 
     let level_filter = config.verbose().to_level_filter();
-    let logger_specs = LogSpecBuilder::from_module_filters(&[ModuleFilter {
-        module_name: Some(VAULT_MODULE_NAME.to_string()),
-        level_filter,
-    }])
-    .finalize();
-
-    let logger = Logger::with(logger_specs)
+    let module_log_filter = format!("{}={}", VAULT_MODULE_NAME, level_filter.to_string());
+    let logger = Logger::with_env_or_str(module_log_filter)
         .format(do_format)
         .suppress_timestamp();
 
